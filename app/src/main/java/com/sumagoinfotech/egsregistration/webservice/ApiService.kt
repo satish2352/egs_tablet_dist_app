@@ -1,5 +1,6 @@
 package com.sumagoinfotech.egsregistration.webservice
 import com.sumagoinfotech.egsregistration.model.LoginModel
+import com.sumagoinfotech.egsregistration.model.addTabInfo.AddTabInfo
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Response
@@ -35,7 +36,7 @@ interface ApiService {
         @Part photoFile: MultipartBody.Part,
         @Part gramsevakIdFile: MultipartBody.Part,
         @Part tabletImeiFile: MultipartBody.Part,
-    ): Response<LoginModel>
+    ): Response<AddTabInfo>
 
 
 

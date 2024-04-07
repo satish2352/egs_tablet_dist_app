@@ -744,10 +744,9 @@ class RegistrationActivity : AppCompatActivity() {
                 if(response.isSuccessful){
                     if(response.body()?.status.equals("True"))
                     {
-                        deleteFileFromUri(Uri.parse(aadharIdImagePath))
-                        deleteFileFromUri(Uri.parse(gramsevakIdImagePath))
-                        deleteFileFromUri(Uri.parse(photoImagePath))
                         withContext(Dispatchers.Main){
+                            Toast.makeText(this@RegistrationActivity,response.body()?.message,
+                                Toast.LENGTH_SHORT).show()
                             finish()
                         }
                     }else{
@@ -763,8 +762,6 @@ class RegistrationActivity : AppCompatActivity() {
                         Toast.makeText(this@RegistrationActivity,resources.getString(R.string.failed_updating_labour_response),
                             Toast.LENGTH_SHORT).show()
                     }
-
-
                 }
                 runOnUiThread {dialog.dismiss()  }
             } catch (e: Exception) {
