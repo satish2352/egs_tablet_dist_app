@@ -11,6 +11,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
         <TextView
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/poppins"
@@ -57,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/poppins"
-            android:text="@string/grampanchayat_name"
+            android:text="@string/gram_panchayat_name"
             android:textSize="10dp"
             android:textColor="@color/appBlue"
             />
@@ -248,6 +249,7 @@
             </ImageView>
         </LinearLayout>
         <TextView
+            android:textSize="10dp"
             android:fontFamily="@font/poppins"
             android:textColor="@color/appBlue"
             android:text="@string/location"
@@ -512,7 +514,7 @@
 
         </LinearLayout>
         <Button
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="36dp"
             android:id="@+id/btnRegister"
             android:layout_marginTop="16dp"
             android:background="@drawable/rounded_background"

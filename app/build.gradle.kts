@@ -67,6 +67,9 @@ dependencies {
     implementation ("com.github.pwittchen:reactivenetwork-rx2:3.0.8")
     implementation ("com.guolindev.permissionx:permissionx:1.7.1")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
+    implementation("io.getstream:photoview:1.0.1")
+
 
 
 

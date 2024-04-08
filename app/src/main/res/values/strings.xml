@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">EGS Registration</string>
+    <string name="app_name">EGS Tab Distribution</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="title_activity_maps">MapsActivity</string>
@@ -149,8 +149,9 @@
     <string name="retry">Retry</string>
     <string name="approved_document_list">Approved Document List</string>
     <string name="grampanchayat_name">Grampanchayat Name</string>
+    <string name="gram_panchayat_name">Grampanchayat Name</string>
     <string name="gramsevak_id_card">Gramsevak Id Card</string>
-    <string name="beneficiary_photo">Benificiary Photo</string>
+    <string name="beneficiary_photo">Beneficiary Photo</string>
     <string name="register">Register</string>
     <string name="enter_aadhar_card_number">Enter Aadhar Card Number</string>
     <string name="enter_grampanchayat_name">Enter Grampanchayat Name</string>
@@ -163,4 +164,10 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="tablet_imei_photo">Tablet IMEI Photo</string>
+    <string name="user_list">User List</string>
+    <string name="response_failed">Response Failed Please Try Again</string>
+    <string name="egs_tab_distribution">EGS Tab Distribution Beneficiary List</string>
+    <string name="aadhar_card_number">Aadhar Card Id</string>
+    <string name="beneficiary_details">Beneficiary Details</string>
+    <string name="beneficiary_registration">Beneficiary Registration</string>
 </resources>

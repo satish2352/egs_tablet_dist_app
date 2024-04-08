@@ -17,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.MenuItem
 import android.widget.ArrayAdapter
@@ -56,6 +58,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -91,6 +94,11 @@ class RegistrationActivity : AppCompatActivity() {
     private lateinit var cameraLauncher: ActivityResultLauncher<Uri>
     private lateinit var dialog: CustomProgressDialog
     private val uriMap = mutableMapOf<Int, Uri>()
+    private var isAadharVerified=false
+    private lateinit var aadharCardFile:File
+    private lateinit var beneficiaryPhotoFile:File
+    private lateinit var imeiPhotoFile:File
+    private lateinit var gramsevakIdPhotoFile:File
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityRegistrationBinding.inflate(layoutInflater)
@@ -109,9 +117,17 @@ class RegistrationActivity : AppCompatActivity() {
                 }
             }) { throwable: Throwable? -> }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title=resources.getString(R.string.egs)
+        supportActionBar?.title=resources.getString(R.string.beneficiary_registration)
         appDatabase=AppDatabase.getDatabase(this)
         areaDao=appDatabase.areaDao()
+        val emptyByteArray = ByteArray(0)
+        CoroutineScope(Dispatchers.IO).launch {
+
+            aadharCardFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"aadharCardFile")!!
+            beneficiaryPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"beneficiaryPhotoFile")!!
+            imeiPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"imeiPhotoFile")!!
+            gramsevakIdPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"gramsevakIdPhoto")!!
+        }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         try {
                 cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
@@ -121,10 +137,12 @@ class RegistrationActivity : AppCompatActivity() {
                         val uriAadhar = uriMap[REQUEST_CODE_AADHAR_CARD]
                         if (uriAadhar != null) {
                             Log.d("mytag", "URI for Aadhar Card: $uriAadhar")
-                            binding.ivAadhar.setImageURI(uriAadhar)
+                            //binding.ivAadhar.setImageURI(uriAadhar)
+                            Glide.with(this@RegistrationActivity).load(uriAadhar).
+                            override(150,120).into(binding.ivAadhar)
                             aadharIdImagePath= uriAadhar.toString()
                             CoroutineScope(Dispatchers.IO).launch {
-                                val uri=uriStringToBitmap(this@RegistrationActivity,uriAadhar.toString(),binding.etLocation.text.toString(),addressFromLatLong)
+                                aadharCardFile=uriStringToTempFile(this@RegistrationActivity,uriAadhar.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
                                 withContext(Dispatchers.Main){
                                     // binding.ivPhoto.setImageBitmap(bitmap)
                                 }
@@ -137,10 +155,12 @@ class RegistrationActivity : AppCompatActivity() {
                         val uriGramsevakId = uriMap[REQUEST_CODE_GRAMSEVAK]
                         if (uriGramsevakId != null) {
                             Log.d("mytag", "URI for MGNREGA Card: $uriGramsevakId")
-                            binding.ivGramsevakId.setImageURI(uriGramsevakId)
+                            //binding.ivGramsevakId.setImageURI(uriGramsevakId)
+                            Glide.with(this@RegistrationActivity).load(uriGramsevakId).
+                            override(150,120).into(binding.ivGramsevakId)
                             gramsevakIdImagePath= uriGramsevakId.toString()
                             CoroutineScope(Dispatchers.IO).launch {
-                                val uri=uriStringToBitmap(this@RegistrationActivity,uriGramsevakId.toString(),binding.etLocation.text.toString(),addressFromLatLong)
+                                gramsevakIdPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriGramsevakId.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
                                 try {
                                     getAddressFromLatLong()
                                 } finally {
@@ -158,10 +178,12 @@ class RegistrationActivity : AppCompatActivity() {
                         val uriPhoto = uriMap[REQUEST_CODE_PHOTO]
                         if (uriPhoto != null) {
                             Log.d("mytag", "URI for Photo: $uriPhoto")
-                            binding.ivPhoto.setImageURI(uriPhoto)
+                            //binding.ivPhoto.setImageURI(uriPhoto)
+                            Glide.with(this@RegistrationActivity).load(uriPhoto).
+                                override(150,120).into(binding.ivPhoto)
                             photoImagePath= uriPhoto.toString()
                             CoroutineScope(Dispatchers.IO).launch {
-                                val uri=uriStringToBitmap(this@RegistrationActivity,uriPhoto.toString(),binding.etLocation.text.toString(),addressFromLatLong)
+                                beneficiaryPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriPhoto.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
                                 withContext(Dispatchers.Main){
                                     // binding.ivPhoto.setImageBitmap(bitmap)
                                 }
@@ -172,10 +194,12 @@ class RegistrationActivity : AppCompatActivity() {
                         val uriTabletImei = uriMap[REQUEST_CODE_TABLET_IMEI]
                         if (uriTabletImei != null) {
                             Log.d("mytag", "URI for Photo: $uriTabletImei")
-                            binding.ivTabletImei.setImageURI(uriTabletImei)
+                            //binding.ivTabletImei.setImageURI(uriTabletImei)
+                            Glide.with(this@RegistrationActivity).load(uriTabletImei).
+                            override(150,120).into(binding.ivTabletImei)
                             tabletImeiPhotoPath= uriTabletImei.toString()
                             CoroutineScope(Dispatchers.IO).launch {
-                                val uri=uriStringToBitmap(this@RegistrationActivity,uriTabletImei.toString(),binding.etLocation.text.toString(),addressFromLatLong)
+                                imeiPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriTabletImei.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
                                 withContext(Dispatchers.Main){
                                     // binding.ivPhoto.setImageBitmap(bitmap)
                                 }
@@ -195,14 +219,21 @@ class RegistrationActivity : AppCompatActivity() {
         binding.btnRegister.setOnClickListener {
           if(isInternetAvailable){
               if(validateFieldsX()){
-                  if(validateDocuments()){
+                  if(isAadharVerified){
+                      if(validateDocuments()){
 
-                     CoroutineScope(Dispatchers.Default).launch {
-                         uploadLabourOnline()
-                     }
+                          CoroutineScope(Dispatchers.Default).launch {
+                              uploadLabourOnline()
+                          }
+                      }else{
+                          Toast.makeText(this@RegistrationActivity,resources.getString(R.string.select_all_documents),Toast.LENGTH_LONG).show()
+                      }
                   }else{
-                      Toast.makeText(this@RegistrationActivity,resources.getString(R.string.select_all_documents),Toast.LENGTH_LONG).show()
+                     CoroutineScope(Dispatchers.IO).launch {
+                         checkIfAadharCardExists(binding.etAadharCard.text.toString().trim())
+                     }
                   }
+
               }else{
                   Toast.makeText(this@RegistrationActivity,resources.getString(R.string.enter_all_details),Toast.LENGTH_LONG).show()
               }
@@ -280,7 +311,7 @@ class RegistrationActivity : AppCompatActivity() {
                 canvas.drawText(formattedDateTime, xAddress, yAddress-50, paint)
 
                 // Save the modified bitmap back to the same location
-                saveBitmapToFile(context, bitmap, uri)
+               // saveBitmapToFile(context, bitmap, uri)
 
                 uri // Return the URI of the modified bitmap
             } catch (e: Exception) {
@@ -290,6 +321,52 @@ class RegistrationActivity : AppCompatActivity() {
             }
         }
     }
+    suspend fun uriStringToTempFile(context: Context, uriString: String, text: String, addressText: String): File? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val uri = Uri.parse(uriString)
+                val futureTarget = Glide.with(context)
+                    .asBitmap()
+                    .load(uri)
+                    .submit()
+                val bitmap = futureTarget.get()
+
+                // Add text overlay to the bitmap
+                val canvas = Canvas(bitmap)
+                val paint = Paint().apply {
+                    color = Color.RED
+                    textSize = 50f // Text size in pixels
+                    isAntiAlias = true
+                    style = Paint.Style.FILL
+                }
+                val currentDateTime = Date()
+                val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                val formattedDateTime = formatter.format(currentDateTime)
+                val x = 50f // Adjust the x-coordinate as needed
+                val y = bitmap.height.toFloat() - 50f // Adjust the y-coordinate as needed
+                val xAddress = 50f // Adjust the x-coordinate as needed
+                val yAddress = bitmap.height.toFloat() - 100f
+                canvas.drawText(text, x, y, paint)
+                canvas.drawText(addressText, xAddress, yAddress, paint)
+                canvas.drawText(formattedDateTime, xAddress, yAddress - 50, paint)
+
+                // Save the modified bitmap to a temporary file
+                val tempFile = File.createTempFile("temp_image", ".jpg", context.cacheDir)
+                val outputStream = FileOutputStream(tempFile)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 20, outputStream)
+                outputStream.close()
+
+                tempFile // Return the temporary file containing the modified bitmap
+            } catch (e: Exception) {
+                val emptyByteArray = ByteArray(0)
+                val tempEmptyFile=createTempJpgFile(context,emptyByteArray,"empty_image")
+                Log.d("mytag", "Exception => " + e.message)
+                e.printStackTrace()
+                tempEmptyFile
+            }
+        }
+    }
+
     private fun saveBitmapToFile(context: Context, bitmap: Bitmap, uri: Uri) {
         try {
             val outputStream = context.contentResolver.openOutputStream(uri)
@@ -483,6 +560,26 @@ class RegistrationActivity : AppCompatActivity() {
             binding.actTaluka.showDropDown()
         }
 
+        binding.etAadharCard.addTextChangedListener(object :TextWatcher{
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if(s?.length==12){
+
+                   CoroutineScope(Dispatchers.IO).launch {
+                       checkIfAadharCardExists(s.toString())
+                   }
+
+                }
+            }
+        })
+
     }
     private fun getAddressFromLatLong():String{
         val geocoder: Geocoder
@@ -582,22 +679,22 @@ class RegistrationActivity : AppCompatActivity() {
         val validationResults = mutableListOf<Boolean>()
         // Full Name
 
-        if (aadharIdImagePath.toString().length > 0 && !aadharIdImagePath.isNullOrBlank()) {
+        if (aadharIdImagePath.toString().length > 0 && !aadharIdImagePath.isNullOrBlank() && aadharCardFile.length()>0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
         }
-        if (gramsevakIdImagePath.toString().length > 0 && !gramsevakIdImagePath.isNullOrBlank()) {
+        if (gramsevakIdImagePath.toString().length > 0 && !gramsevakIdImagePath.isNullOrBlank() && gramsevakIdPhotoFile.length()>0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
         }
-        if (photoImagePath.toString().length > 0 && !photoImagePath.isNullOrBlank()) {
+        if (photoImagePath.toString().length > 0 && !photoImagePath.isNullOrBlank() && beneficiaryPhotoFile.length()>0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
         }
-        if (tabletImeiPhotoPath.toString().length > 0 && !tabletImeiPhotoPath.isNullOrBlank()) {
+        if (tabletImeiPhotoPath.toString().length > 0 && !tabletImeiPhotoPath.isNullOrBlank() && imeiPhotoFile.length()>0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
@@ -711,6 +808,19 @@ class RegistrationActivity : AppCompatActivity() {
            return null
         }
     }
+    private suspend fun createFilePartByFile(file: File,fileName:String): MultipartBody.Part? {
+        try {
+
+            return file?.let {
+                val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), it)
+                MultipartBody.Part.createFormData(fileName, it.name, requestFile)
+            }
+        } catch (e: Exception) {
+            Log.d("mytag", "Exception createFilePartByFile: ${e.message}")
+            e.printStackTrace()
+            return null
+        }
+    }
     private suspend fun uploadLabourOnline(){
         runOnUiThread {
             dialog.show()
@@ -719,13 +829,13 @@ class RegistrationActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val aadharCardImage =
-                    createFilePart(FileInfo("aadhar_image", aadharIdImagePath))
+                    createFilePartByFile(aadharCardFile,"aadhar_image")
                 val gramsevakIdImage =
-                    createFilePart(FileInfo("gram_sevak_id_card_photo", gramsevakIdImagePath))
+                    createFilePartByFile(gramsevakIdPhotoFile,"gram_sevak_id_card_photo")
                 val profileImage =
-                    createFilePart(FileInfo("photo_of_beneficiary", photoImagePath))
+                createFilePartByFile(beneficiaryPhotoFile,"photo_of_beneficiary")
                 val tabletImeiImage =
-                    createFilePart(FileInfo("photo_of_tablet_imei", tabletImeiPhotoPath))
+                    createFilePartByFile(imeiPhotoFile,"photo_of_tablet_imei")
                 val response= apiService.uploadLaborInfo(
                     fullName = binding.etFullName.text.toString(),
                     grampanchayatName = binding.etGramPanchayatName.text.toString(),
@@ -819,5 +929,70 @@ class RegistrationActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
+
+    private suspend fun checkIfAadharCardExists(aadharCardNumber:String){
+
+            runOnUiThread {
+                dialog.show()
+            }
+            val apiService = ApiClient.create(this@RegistrationActivity)
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+
+                    val response= apiService.checkIfAadharExists(aadharCardNumber)
+                    if(response.isSuccessful){
+                        runOnUiThread { dialog.dismiss() }
+                        if(response.body()?.status.equals("true"))
+                        {
+                            runOnUiThread {
+                                binding.etAadharCard.error="Aadhar number already registered with another user"
+                            }
+                            withContext(Dispatchers.Main){
+                                Toast.makeText(this@RegistrationActivity,response.body()?.message,
+                                    Toast.LENGTH_SHORT).show()
+                            }
+                        }else{
+                            isAadharVerified=true
+                            runOnUiThread { binding.etAadharCard.error=null }
+                            withContext(Dispatchers.Main){
+                            }
+                        }
+                    }else{
+                        withContext(Dispatchers.Main){
+                            dialog.dismiss()
+                            Toast.makeText(this@RegistrationActivity,resources.getString(R.string.failed_updating_labour_response),
+                                Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    //runOnUiThread {dialog.dismiss()  }
+                } catch (e: Exception) {
+                    runOnUiThread { dialog.dismiss() }
+                    withContext(Dispatchers.Main){
+                        Toast.makeText(this@RegistrationActivity,resources.getString(R.string.response_failed),
+                            Toast.LENGTH_SHORT).show()
+                    }
+                    Log.d("mytag","checkIfAadharCardExists "+e.message)
+                }
+            }
+    }
+    suspend fun createTempJpgFile(context: Context, byteArray: ByteArray, filename: String): File? =
+        withContext(Dispatchers.IO) {
+            var tempFile: File? = null
+            try {
+                // Create a temporary file
+                tempFile = File.createTempFile(filename, ".jpg", context.cacheDir)
+
+                // Write the byte array to the temporary file
+                val outputStream = FileOutputStream(tempFile)
+                outputStream.write(byteArray)
+                outputStream.close()
+            } catch (e: IOException) {
+                // Handle exceptions, such as if the file cannot be created or if there's an I/O error
+                e.printStackTrace()
+                Log.d("mytag", "Exception " + e.message)
+            }
+            tempFile // Return the temporary file (or null if an error occurred)
+        }
+
 
 }

@@ -1,6 +1,9 @@
 package com.sumagoinfotech.egsregistration.webservice
 import com.sumagoinfotech.egsregistration.model.LoginModel
+import com.sumagoinfotech.egsregistration.model.TabDistList.TabDistListModel
 import com.sumagoinfotech.egsregistration.model.addTabInfo.AddTabInfo
+import com.sumagoinfotech.egsregistration.model.areamaster.MasterUpdateModel
+import com.sumagoinfotech.egsregistration.model.detailsbyid.UserDetailsModel
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Response
@@ -37,6 +40,26 @@ interface ApiService {
         @Part gramsevakIdFile: MultipartBody.Part,
         @Part tabletImeiFile: MultipartBody.Part,
     ): Response<AddTabInfo>
+
+    @POST("auth/list-tablet-distribution-info")
+    suspend fun getTabDistributionList(
+        @Query("start") startPageNumber: String,
+        @Query("length") pageLength: String,
+    ): Response<TabDistListModel>
+
+
+    @POST("auth/adhar-card-exist")
+    suspend fun checkIfAadharExists(
+        @Query("adhar_card_number") aadharCardNumber: String,
+    ): Response<LoginModel>
+    @POST("list-masters-updated")
+    fun fetchMastersDataTobeUpdated(): Call<MasterUpdateModel>
+
+    @POST("auth/get-tablet-distribution-perticular-info")
+    fun getBeneficiaryById(
+        @Query("id") id: String,
+    ): Call<UserDetailsModel>
+
 
 
 

@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "area")
 data class AreaItem(
-    @PrimaryKey(autoGenerate = true) val id: Int? = null,
+    @PrimaryKey(autoGenerate = true) var id: Int? = null,
     val is_active: String,
     val is_visible: String,
     val location_id: String,

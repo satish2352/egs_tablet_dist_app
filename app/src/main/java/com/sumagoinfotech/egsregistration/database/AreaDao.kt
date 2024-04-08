@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 
 @Dao
 interface AreaDao {
@@ -24,7 +25,11 @@ interface AreaDao {
 
     @Query("SELECT * FROM area WHERE location_id = :location_id ORDER BY name ASC")
     suspend fun getAreaByLocationId(location_id: String): AreaItem
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(entity: AreaItem)
 
+    @Update
+    suspend fun update(entity: AreaItem)
 
 
 

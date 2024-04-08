@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.gson.Gson
 import com.sumagoinfotech.egsregistration.MainActivity
@@ -15,11 +16,17 @@ import com.sumagoinfotech.egsregistration.database.AppDatabase
 import com.sumagoinfotech.egsregistration.database.AreaDao
 import com.sumagoinfotech.egsregistration.database.AreaItem
 import com.sumagoinfotech.egsregistration.databinding.ActivitySplashBinding
+import com.sumagoinfotech.egsregistration.model.areamaster.AreaUpdateData
+import com.sumagoinfotech.egsregistration.model.areamaster.MasterUpdateModel
 import com.sumagoinfotech.egsregistration.utils.MySharedPref
+import com.sumagoinfotech.egsregistration.webservice.ApiClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -57,7 +64,7 @@ class SplashActivity : AppCompatActivity() {
                 }else{
                     Log.d("mytag","Not empty")
                 }
-            //fetchMastersFromServer()
+            fetchMastersFromServer()
             withContext(Dispatchers.Main) {
                 val mySharedPref=MySharedPref(this@SplashActivity)
                 if(mySharedPref.getIsLoggedIn()){
@@ -100,36 +107,35 @@ class SplashActivity : AppCompatActivity() {
         return items
     }
 
-    /*private  fun fetchMastersFromServer(){
+    private  fun fetchMastersFromServer(){
         try {
             val apiService= ApiClient.create(this@SplashActivity)
-            apiService.getAllMasters().enqueue(object :
-                Callback<MastersModel> {
+            apiService.fetchMastersDataTobeUpdated().enqueue(object :
+                Callback<MasterUpdateModel> {
                 override fun onResponse(
-                    call: Call<MastersModel>,
-                    response: Response<MastersModel>
+                    call: Call<MasterUpdateModel>,
+                    response: Response<MasterUpdateModel>
                 ) {
                     if(response.isSuccessful){
-                        if(response.body()?.status.equals("success")) {
-                            val skillsConverted=mapToSkills(response?.body()?.data?.skills!!)
-                            val maritalStatusConverted=mapToMaritalStatus(response?.body()?.data?.maritalstatus!!)
-                            val genderConverted=mapToMaritalGender(response?.body()?.data?.gender!!)
-                            val relationConverted=mapToRelation(response?.body()?.data?.relation!!)
-                            val documentTypeConverted=mapToDocumentType(response?.body()?.data?.documenttype!!)
-                            val registrationStatusConverted=mapToRegistrationStatus(response?.body()?.data?.registrationstatus!!)
-                            val reasonsConverted=mapToReasons(response?.body()?.data?.reasons!!)
-                            val documentReasonsConverted=mapToDocumentReasons(response?.body()?.data?.documentreasons!!)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                skillsDao.insertInitialRecords(skillsConverted)
-                                maritalStatusDao.insertInitialRecords(maritalStatusConverted)
-                                genderDao.insertInitialRecords(genderConverted)
-                                relationDao.insertInitialRecords(relationConverted)
-                                documentTypeDropDownDao.insertInitialRecords(documentTypeConverted)
-                                registrationStatusDao.insertInitialRecords(registrationStatusConverted)
-                                registrationStatusDao.insertInitialRecords(registrationStatusConverted)
-                                reasonsDao.insertInitialRecords(reasonsConverted)
-                                documentReasonsDao.insertInitialRecords(documentReasonsConverted)
+                        if(response.body()?.status.equals("success"))
+                        {
+                            if(response.body()?.data?.size!!>0){
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    val documentReasonsConverted=mapDataToArea(response?.body()?.data!!)
+                                    documentReasonsConverted.forEach { entity ->
+                                        val existingEntity = areaDao.getAreaByLocationId(entity.location_id)
+                                        if (existingEntity != null) {
+                                            // Update existing entity
+                                            entity.id = existingEntity.id
+                                            areaDao.update(entity)
+                                        } else {
+                                            // Insert new entity
+                                            areaDao.insert(entity)
+                                        }
+                                    }
+                                }
                             }
+
                         }else {
                             Log.d("mytag","fetchMastersFromServer:Response Not success")
                             Toast.makeText(this@SplashActivity, "No records found", Toast.LENGTH_SHORT)
@@ -141,7 +147,7 @@ class SplashActivity : AppCompatActivity() {
                     }
 
                 }
-                override fun onFailure(call: Call<MastersModel>, t: Throwable) {
+                override fun onFailure(call: Call<MasterUpdateModel>, t: Throwable) {
                     Log.d("mytag","fetchMastersFromServer:onFailure ${t.message}")
                     Toast.makeText(this@SplashActivity, "Error Ocuured during api call", Toast.LENGTH_SHORT).show()
                 }
@@ -150,21 +156,22 @@ class SplashActivity : AppCompatActivity() {
             Log.d("mytag","Exception: "+e.message)
             e.printStackTrace()
         }
-    }*/
+    }
 
 
 
-    /*fun mapToMaritalGender(apiResponseList: List<Gender>): List<com.sumagoinfotech.digicopy.database.entity.Gender> {
+    fun mapDataToArea(apiResponseList: List<AreaUpdateData>): List<AreaItem> {
         return apiResponseList.map { apiResponse ->
-            com.sumagoinfotech.digicopy.database.entity.Gender(
-                id = apiResponse.id,
-                gender_name = apiResponse.gender_name,
+            AreaItem(
+                parent_id = apiResponse.parent_id.toString(),
                 is_active = apiResponse.is_active,
-                created_at = apiResponse.created_at,
-                updated_at = apiResponse.updated_at
+                is_visible = apiResponse.is_visible,
+                location_id = apiResponse.location_id.toString(),
+                location_type = apiResponse.location_type,
+                name = apiResponse.name
             )
         }
-    }*/
+    }
 
 
 
