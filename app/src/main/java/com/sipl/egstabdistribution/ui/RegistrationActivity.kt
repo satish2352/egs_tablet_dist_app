@@ -684,7 +684,7 @@ class RegistrationActivity : AppCompatActivity() {
         return !validationResults.contains(false)
     }
     private fun validateDocuments(): Boolean {
-        val validationResults = mutableListOf<Boolean>()it
+        val validationResults = mutableListOf<Boolean>()
         if (aadharIdImagePath.toString().length > 0 && !aadharIdImagePath.isNullOrBlank() && aadharCardFile.length()>0) {
             validationResults.add(true)
         } else {
