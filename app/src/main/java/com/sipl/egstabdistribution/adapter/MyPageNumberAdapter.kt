@@ -43,7 +43,8 @@ public class MyPageNumberAdapter(var pageSize:Int,var currentPage:String,private
             notifyItemChanged(selectedItemIndex)
         }
         if (Integer.parseInt(currentPage) == position+1) {
-            holder.tvPageNo.setTextColor(holder.itemView.context.resources.getColor(R.color.appBlue)) // Change to your desired color
+            //holder.tvPageNo.setTextColor(holder.itemView.context.resources.getColor(R.color.appBlue)) // Change to your desired color
+            holder.tvPageNo.setTextColor(Color.RED) // Change to your desired color
         } else {
             holder.tvPageNo.setTextColor(Color.BLACK) // Change to your default text color
         }

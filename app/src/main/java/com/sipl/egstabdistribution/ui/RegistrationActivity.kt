@@ -141,10 +141,11 @@ class RegistrationActivity : AppCompatActivity() {
                             Glide.with(this@RegistrationActivity).load(uriAadhar).
                             override(150,120).into(binding.ivAadhar)
                             aadharIdImagePath= uriAadhar.toString()
+                            dialog.show()
                             CoroutineScope(Dispatchers.IO).launch {
                                 aadharCardFile=uriStringToTempFile(this@RegistrationActivity,uriAadhar.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
                                 withContext(Dispatchers.Main){
-                                    // binding.ivPhoto.setImageBitmap(bitmap)
+                                    dialog.dismiss()
                                 }
 
                             }
@@ -159,6 +160,7 @@ class RegistrationActivity : AppCompatActivity() {
                             Glide.with(this@RegistrationActivity).load(uriGramsevakId).
                             override(150,120).into(binding.ivGramsevakId)
                             gramsevakIdImagePath= uriGramsevakId.toString()
+                            dialog.show()
                             CoroutineScope(Dispatchers.IO).launch {
                                 gramsevakIdPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriGramsevakId.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
                                 try {
@@ -167,7 +169,7 @@ class RegistrationActivity : AppCompatActivity() {
 
                                 }
                                 withContext(Dispatchers.Main){
-                                    // binding.ivPhoto.setImageBitmap(bitmap)
+                                    dialog.dismiss()
                                 }
 
                             }
@@ -182,10 +184,11 @@ class RegistrationActivity : AppCompatActivity() {
                             Glide.with(this@RegistrationActivity).load(uriPhoto).
                                 override(150,120).into(binding.ivPhoto)
                             photoImagePath= uriPhoto.toString()
+                            dialog.show()
                             CoroutineScope(Dispatchers.IO).launch {
                                 beneficiaryPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriPhoto.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
                                 withContext(Dispatchers.Main){
-                                    // binding.ivPhoto.setImageBitmap(bitmap)
+                                    dialog.dismiss()
                                 }
                             }
                         } else {
@@ -198,10 +201,15 @@ class RegistrationActivity : AppCompatActivity() {
                             Glide.with(this@RegistrationActivity).load(uriTabletImei).
                             override(150,120).into(binding.ivTabletImei)
                             tabletImeiPhotoPath= uriTabletImei.toString()
+                            dialog.show()
                             CoroutineScope(Dispatchers.IO).launch {
                                 imeiPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriTabletImei.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
                                 withContext(Dispatchers.Main){
-                                    // binding.ivPhoto.setImageBitmap(bitmap)
+                                    if(imeiPhotoFile.length()>0){
+                                       Log.d("mytag",imeiPhotoFile.length().toString())
+                                        dialog.dismiss()
+                                    }
+
                                 }
                             }
                         } else {
@@ -220,8 +228,8 @@ class RegistrationActivity : AppCompatActivity() {
           if(isInternetAvailable){
               if(validateFieldsX()){
                   if(isAadharVerified){
-                      if(validateDocuments()){
-
+                      if(validateDocuments())
+                      {
                           CoroutineScope(Dispatchers.Default).launch {
                               uploadLabourOnline()
                           }
@@ -676,9 +684,7 @@ class RegistrationActivity : AppCompatActivity() {
         return !validationResults.contains(false)
     }
     private fun validateDocuments(): Boolean {
-        val validationResults = mutableListOf<Boolean>()
-        // Full Name
-
+        val validationResults = mutableListOf<Boolean>()it
         if (aadharIdImagePath.toString().length > 0 && !aadharIdImagePath.isNullOrBlank() && aadharCardFile.length()>0) {
             validationResults.add(true)
         } else {

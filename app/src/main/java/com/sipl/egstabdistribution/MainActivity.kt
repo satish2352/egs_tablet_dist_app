@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity(),
     private lateinit var apiService: ApiService
     private lateinit var adapter:TabDistributionListAdapter
     private var tabUserList= mutableListOf<TabUser>()
-    private var pageSize="50"
+    private var pageSize=50
     private lateinit var paginationAdapter: MyPageNumberAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity(),
         supportActionBar?.title=resources.getString(R.string.beneficiary_list)
         dialog= CustomProgressDialog(this)
         apiService= ApiClient.create(this)
-        adapter= TabDistributionListAdapter(tabUserList)
+        adapter= TabDistributionListAdapter(tabUserList,0,pageSize)
         binding.recyclerView.layoutManager= LinearLayoutManager(this, RecyclerView.VERTICAL,false)
         binding.recyclerViewPageNumbers.layoutManager= LinearLayoutManager(this, RecyclerView.HORIZONTAL,false)
         binding.recyclerView.adapter=adapter
@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity(),
     override fun onResume() {
         super.onResume()
         CoroutineScope(Dispatchers.IO).launch {
-            getDataFromServer("1",pageSize)
+            getDataFromServer("1",pageSize.toString())
         }
     }
 
@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity(),
                             withContext(Dispatchers.Main){
                                 binding.tvNoRecords.visibility=View.GONE
                                 tabUserList= response.body()?.data?.toMutableList()!!
-                                adapter= TabDistributionListAdapter(tabUserList)
+                                adapter= TabDistributionListAdapter(tabUserList,Integer.parseInt(response.body()?.page_no_to_hilight),pageSize)
                                 Log.d("mytag",""+tabUserList.size)
                                 Log.d("mytag",""+response.body()?.status)
                                 binding.recyclerView.adapter=adapter
@@ -192,7 +192,7 @@ class MainActivity : AppCompatActivity(),
     override fun onPageNumberClicked(pageNumber: Int) {
         Log.d("mytag","ListActivity :: getDataFromServer "+pageNumber)
         CoroutineScope(Dispatchers.IO).launch {
-            getDataFromServer("$pageNumber",pageSize)
+            getDataFromServer("$pageNumber",pageSize.toString())
             paginationAdapter.setSelectedPage(pageNumber)
         }
     }

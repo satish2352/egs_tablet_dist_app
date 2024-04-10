@@ -13,7 +13,7 @@ import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.model.TabDistList.TabUser
 import com.sipl.egstabdistribution.ui.BeneficiaryDetailsActivity
 
-class TabDistributionListAdapter(var tabUserList: MutableList<TabUser>) : RecyclerView.Adapter<TabDistributionListAdapter.ViewHolder>() {
+class TabDistributionListAdapter(var tabUserList: MutableList<TabUser>,var currentPage:Int,var pageSize:Int) : RecyclerView.Adapter<TabDistributionListAdapter.ViewHolder>() {
     class ViewHolder(itemView: View) :RecyclerView.ViewHolder(itemView) {
         val tvFullName=itemView.findViewById<TextView>(R.id.tvFullName)
         val tvSrNo=itemView.findViewById<TextView>(R.id.tvSrNo)
@@ -34,7 +34,7 @@ class TabDistributionListAdapter(var tabUserList: MutableList<TabUser>) : Recycl
         try {
 
             holder.tvFullName.text = tabUserList[position]?.full_name ?: ""
-            holder.tvSrNo.text = (position+1).toString()
+            holder.tvSrNo.text = ((currentPage - 1) * pageSize + position + 1).toString()
             holder.tvMobile.text = tabUserList[position]?.mobile_number ?: ""
             val address =
                 "${tabUserList[position].district_name} ->${tabUserList[position].taluka_name} ->${tabUserList[position].village_name}"
