@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.sumagoinfotech.egsregistration"
+    namespace = "com.sipl.egstabdistribution"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.sumagoinfotech.egsregistration"
+        applicationId = "com.sipl.egstabdistribution"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
