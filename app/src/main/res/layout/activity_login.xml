@@ -121,7 +121,6 @@
                         android:background="@drawable/rounded_background_light_green"
                         android:paddingLeft="16dp"></com.google.android.material.textfield.TextInputEditText>
                 </com.google.android.material.textfield.TextInputLayout>
-
                 <Button
                     android:textAllCaps="false"
                     android:id="@+id/btnLogin"
@@ -133,15 +132,7 @@
                     android:layout_marginRight="16dp"
                     android:fontFamily="@font/poppins"
                     android:text="@string/login"></Button>
-
-                <ImageView
-                    android:id="@+id/ivHome"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/login_image"></ImageView>
-
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
 
 

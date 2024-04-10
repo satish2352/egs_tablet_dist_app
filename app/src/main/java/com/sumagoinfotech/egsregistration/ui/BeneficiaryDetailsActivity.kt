@@ -1,16 +1,19 @@
 package com.sumagoinfotech.egsregistration.ui
 
 import android.app.Dialog
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -23,8 +26,10 @@ import com.google.gson.Gson
 import com.sumagoinfotech.egsregistration.R
 import com.sumagoinfotech.egsregistration.databinding.ActivityBeneficiaryDetailsBinding
 import com.sumagoinfotech.egsregistration.model.areamaster.MasterUpdateModel
+import com.sumagoinfotech.egsregistration.model.delete.DeleteModel
 import com.sumagoinfotech.egsregistration.model.detailsbyid.UserDetailsModel
 import com.sumagoinfotech.egsregistration.utils.CustomProgressDialog
+import com.sumagoinfotech.egsregistration.utils.MySharedPref
 import com.sumagoinfotech.egsregistration.webservice.ApiClient
 import io.getstream.photoview.PhotoView
 import retrofit2.Call
@@ -130,7 +135,73 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
         if(item.itemId==android.R.id.home){
             finish()
         }
+        if(item.itemId==R.id.action_delete){
+            AlertDialog.Builder(this)
+                .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_beneficiary_details))
+                .setIcon(R.drawable.ic_delete)
+                .setTitle(R.string.delete)
+                .setPositiveButton("Yes") { dialog, _ ->
+                    deleteBeneficiary(beneficiaryid)
+                    dialog.dismiss()
+                }
+                .setNegativeButton("No") { dialog, _ ->
+                    dialog.dismiss()
+                    // Handle the case when the user chooses not to enable GPS
+                }
+                .show()
+
+        }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun deleteBeneficiary(id:String) {
+        try {
+            dialog.show()
+            val apiService= ApiClient.create(this@BeneficiaryDetailsActivity)
+            apiService.deleteBeneficiaryById(id).enqueue(object :
+                Callback<DeleteModel> {
+                override fun onResponse(
+                    call: Call<DeleteModel>,
+                    response: Response<DeleteModel>
+                ) {
+                    dialog.dismiss()
+                    if(response.isSuccessful){
+                        if(!response.body()?.status.isNullOrEmpty()) {
+
+                            if(response.body()?.status.equals("true")){
+                                Toast.makeText(this@BeneficiaryDetailsActivity, response.body()?.message, Toast.LENGTH_SHORT)
+                                    .show()
+                                finish()
+                            }else{
+                                Toast.makeText(this@BeneficiaryDetailsActivity, response.body()?.message, Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }else {
+                            Toast.makeText(this@BeneficiaryDetailsActivity, response.body()?.message, Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    } else{
+                        Toast.makeText(this@BeneficiaryDetailsActivity,  response.body()?.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+                override fun onFailure(call: Call<DeleteModel>, t: Throwable) {
+                    Log.d("mytag","Exception "+t.message)
+                    t.printStackTrace()
+                    dialog.dismiss()
+                    Toast.makeText(this@BeneficiaryDetailsActivity,
+                        getString(R.string.error_occurred_during_api_call), Toast.LENGTH_SHORT).show()
+                }
+            })
+        } catch (e: Exception) {
+            dialog.dismiss()
+            e.printStackTrace()
+        }
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_delete,menu)
+        return true
     }
 
     private fun showPhotoZoomDialog(uri:String){

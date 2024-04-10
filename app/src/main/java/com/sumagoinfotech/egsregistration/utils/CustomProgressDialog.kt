@@ -8,6 +8,7 @@ import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.os.Build
 import com.sumagoinfotech.egsregistration.R
+import io.reactivex.functions.Cancellable
 
 
 class CustomProgressDialog(private val context: Context) {
@@ -31,6 +32,9 @@ class CustomProgressDialog(private val context: Context) {
 
     public fun dismiss() {
         dialog.dismiss()
+    }
+    public fun setCancelable(isCancellable: Boolean){
+        dialog.setCancelable(isCancellable)
     }
 
     private fun setColorFilter(drawable: Drawable, color: Int) {

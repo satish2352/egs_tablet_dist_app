@@ -3,6 +3,7 @@ import com.sumagoinfotech.egsregistration.model.LoginModel
 import com.sumagoinfotech.egsregistration.model.TabDistList.TabDistListModel
 import com.sumagoinfotech.egsregistration.model.addTabInfo.AddTabInfo
 import com.sumagoinfotech.egsregistration.model.areamaster.MasterUpdateModel
+import com.sumagoinfotech.egsregistration.model.delete.DeleteModel
 import com.sumagoinfotech.egsregistration.model.detailsbyid.UserDetailsModel
 import okhttp3.MultipartBody
 import retrofit2.Call
@@ -52,6 +53,7 @@ interface ApiService {
     suspend fun checkIfAadharExists(
         @Query("adhar_card_number") aadharCardNumber: String,
     ): Response<LoginModel>
+
     @POST("list-masters-updated")
     fun fetchMastersDataTobeUpdated(): Call<MasterUpdateModel>
 
@@ -59,6 +61,11 @@ interface ApiService {
     fun getBeneficiaryById(
         @Query("id") id: String,
     ): Call<UserDetailsModel>
+
+    @POST("auth/get-tablet-distribution-perticular-delete")
+    fun deleteBeneficiaryById(
+        @Query("id") id: String,
+    ): Call<DeleteModel>
 
 
 

@@ -4,10 +4,10 @@
 
 
     <item
-        android:id="@+id/action_logout"
-        android:icon="@drawable/ic_logout"
+        android:id="@+id/action_delete"
+        android:icon="@drawable/delete"
         app:showAsAction="ifRoom"
-        android:title="@string/logout" />
+        android:title="@string/delete" />
 
 
 </menu>

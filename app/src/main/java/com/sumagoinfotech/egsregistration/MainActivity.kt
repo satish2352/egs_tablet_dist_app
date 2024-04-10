@@ -39,13 +39,13 @@ class MainActivity : AppCompatActivity(),
     private lateinit var apiService: ApiService
     private lateinit var adapter:TabDistributionListAdapter
     private var tabUserList= mutableListOf<TabUser>()
-    private var pageSize="25"
+    private var pageSize="50"
     private lateinit var paginationAdapter: MyPageNumberAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportActionBar?.title=resources.getString(R.string.egs_tab_distribution)
+        supportActionBar?.title=resources.getString(R.string.beneficiary_list)
         dialog= CustomProgressDialog(this)
         apiService= ApiClient.create(this)
         adapter= TabDistributionListAdapter(tabUserList)
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity(),
         binding.recyclerView.setScrollbarFadingEnabled(false)
         binding.recyclerViewPageNumbers.setScrollbarFadingEnabled(false)
         adapter.notifyDataSetChanged()
-        paginationAdapter= MyPageNumberAdapter(0,this)
+        paginationAdapter= MyPageNumberAdapter(0,"0",this)
         ReactiveNetwork
             .observeNetworkConnectivity(applicationContext)
             .subscribeOn(Schedulers.io())
@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity(),
                                 Log.d("mytag",""+response.body()?.status)
                                 binding.recyclerView.adapter=adapter
                                 adapter.notifyDataSetChanged()
-                                val pageAdapter=MyPageNumberAdapter(response.body()?.totalPages!!,this@MainActivity)
+                                val pageAdapter=MyPageNumberAdapter(response.body()?.totalPages!!,response.body()?.page_no_to_hilight.toString(),this@MainActivity)
                                 if(binding.recyclerView.computeHorizontalScrollRange()>binding.recyclerView.width)
                                 {
                                     binding.layoutIconScroll.iVScrollableIcon.visibility = View.VISIBLE
@@ -175,6 +175,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onPageNumberClicked(pageNumber: Int) {
+        Log.d("mytag","ListActivity :: getDataFromServer "+pageNumber)
         CoroutineScope(Dispatchers.IO).launch {
             getDataFromServer("$pageNumber",pageSize)
             paginationAdapter.setSelectedPage(pageNumber)

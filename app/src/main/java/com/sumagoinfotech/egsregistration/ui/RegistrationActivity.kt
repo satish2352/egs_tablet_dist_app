@@ -854,6 +854,8 @@ class RegistrationActivity : AppCompatActivity() {
                 if(response.isSuccessful){
                     if(response.body()?.status.equals("True"))
                     {
+
+                        deleteFilesFromFolder()
                         withContext(Dispatchers.Main){
                             Toast.makeText(this@RegistrationActivity,response.body()?.message,
                                 Toast.LENGTH_SHORT).show()
@@ -882,6 +884,25 @@ class RegistrationActivity : AppCompatActivity() {
                 }
                 Log.d("mytag","uploadLabourOnline "+e.message)
             }
+        }
+    }
+    private fun deleteFilesFromFolder() {
+        try {
+            val mediaStorageDir = File(externalMediaDirs[0], "myfiles")
+            val uriFolder = Uri.parse(mediaStorageDir.absolutePath)
+            val myAppFolder = File(uriFolder.toString())
+            val files = myAppFolder.listFiles()
+            files?.forEach { file ->
+                if (file.isFile) {
+                    if (file.delete()) {
+                        Log.d("mytag", "Deleted file: ${file.absolutePath}")
+                    } else {
+                        Log.d("mytag", "Failed to delete file: ${file.absolutePath}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.d("mytag", "Failed to delete file: ")
         }
     }
     private fun deleteFileFromUri(uri: Uri) {
