@@ -82,8 +82,15 @@ class MainActivity : AppCompatActivity(),
 
         binding.floatingActionButton.setOnClickListener {
 
-            val intent=Intent(this,RegistrationActivity::class.java)
-            startActivity(intent)
+            if(isInternetAvailable){
+                val intent=Intent(this,RegistrationActivity::class.java)
+                startActivity(intent)
+            }else{
+                Toast.makeText(this@MainActivity,
+                    getString(R.string.please_check_internet_connection),Toast.LENGTH_LONG).show()
+            }
+
+
         }
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {

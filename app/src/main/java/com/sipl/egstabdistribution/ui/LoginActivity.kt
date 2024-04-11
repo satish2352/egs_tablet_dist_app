@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
+import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
 import com.sipl.egstabdistribution.MainActivity
 import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.database.AppDatabase
@@ -15,6 +17,8 @@ import com.sipl.egstabdistribution.utils.CustomProgressDialog
 import com.sipl.egstabdistribution.utils.MySharedPref
 import com.sipl.egstabdistribution.utils.MyValidator
 import com.sipl.egstabdistribution.webservice.ApiClient
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,6 +31,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var database: AppDatabase
     private lateinit var customProgressDialog: CustomProgressDialog
     private lateinit var mySharedPref: MySharedPref
+    private  var isInternetAvailable: Boolean=false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,24 +43,40 @@ class LoginActivity : AppCompatActivity() {
         val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
         mySharedPref.setDeviceId(deviceId)
         customProgressDialog= CustomProgressDialog(this)
+        ReactiveNetwork
+            .observeNetworkConnectivity(applicationContext)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ connectivity: Connectivity ->
+                Log.d("##", "=>" + connectivity.state())
+                if (connectivity.state().toString() == "CONNECTED") {
+                    isInternetAvailable = true
+                } else {
+                    isInternetAvailable = false
+
+                }
+            }) { throwable: Throwable? -> }
         binding.btnLogin.setOnClickListener {
-            if(validateFields()) {
+            if (isInternetAvailable) {
+            if (validateFields()) {
                 customProgressDialog.show()
-                val mySharedPref=MySharedPref(this@LoginActivity)
+                val mySharedPref = MySharedPref(this@LoginActivity)
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        val apiService= ApiClient.create(this@LoginActivity)
-                        val call=apiService.loginUser(binding.etEmail.text.toString(),binding.etPassword.text.toString())
+                        val apiService = ApiClient.create(this@LoginActivity)
+                        val call = apiService.loginUser(
+                            binding.etEmail.text.toString(),
+                            binding.etPassword.text.toString()
+                        )
                         call.enqueue(object : Callback<LoginModel> {
                             override fun onResponse(
                                 call: Call<LoginModel>,
                                 response: Response<LoginModel>
                             ) {
-                                if(response.isSuccessful)
-                                {
-                                    val message=response.body()?.message
-                                    if(response.body()?.status.equals("True")){
-                                        val loginModel=response.body()
+                                if (response.isSuccessful) {
+                                    val message = response.body()?.message
+                                    if (response.body()?.status.equals("True")) {
+                                        val loginModel = response.body()
                                         mySharedPref.setIsLoggedIn(true)
                                         mySharedPref.setId(loginModel?.data?.id!!)
                                         mySharedPref.setEmail(loginModel?.data?.email!!)
@@ -67,49 +88,59 @@ class LoginActivity : AppCompatActivity() {
                                         mySharedPref.setUserDistrictId(loginModel?.data?.user_district.toString())
                                         mySharedPref.setUserTalukaId(loginModel?.data?.user_taluka.toString())
                                         mySharedPref.setUserVillageId(loginModel?.data?.user_village.toString())
-                                        if(loginModel?.data?.role_id==2)
-                                        {
+                                        if (loginModel?.data?.role_id == 2) {
                                             mySharedPref.setOfficerDistrictID(loginModel?.data?.user_district.toString())
                                             mySharedPref.setUserTalukaId(loginModel?.data?.user_taluka.toString())
                                             mySharedPref.setUserVillageId(loginModel?.data?.user_village.toString())
                                         }
                                         runOnUiThread {
                                             customProgressDialog.dismiss()
-                                                val toast= Toast.makeText(this@LoginActivity,
-                                                    getString(R.string.login_successful),
-                                                    Toast.LENGTH_SHORT)
-                                                toast.show()
-                                                val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                                                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                                                startActivity(intent)
-                                                finish()
+                                            val toast = Toast.makeText(
+                                                this@LoginActivity,
+                                                getString(R.string.login_successful),
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            toast.show()
+                                            val intent =
+                                                Intent(this@LoginActivity, MainActivity::class.java)
+                                            intent.flags =
+                                                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                                            startActivity(intent)
+                                            finish()
                                         }
-                                    }else{
+                                    } else {
                                         runOnUiThread {
                                             customProgressDialog.dismiss()
-                                            val toast= Toast.makeText(this@LoginActivity,
+                                            val toast = Toast.makeText(
+                                                this@LoginActivity,
                                                 message,
-                                                Toast.LENGTH_SHORT)
+                                                Toast.LENGTH_SHORT
+                                            )
                                             toast.show()
                                         }
                                     }
 
-                                }else{
+                                } else {
                                     runOnUiThread {
                                         customProgressDialog.dismiss()
-                                        val toast= Toast.makeText(this@LoginActivity,
+                                        val toast = Toast.makeText(
+                                            this@LoginActivity,
                                             getString(R.string.error_while_login),
-                                            Toast.LENGTH_SHORT)
+                                            Toast.LENGTH_SHORT
+                                        )
                                         toast.show()
                                     }
                                 }
                             }
+
                             override fun onFailure(call: Call<LoginModel>, t: Throwable) {
                                 runOnUiThread {
                                     customProgressDialog.dismiss()
-                                    val toast= Toast.makeText(this@LoginActivity,
+                                    val toast = Toast.makeText(
+                                        this@LoginActivity,
                                         getString(R.string.error_while_login),
-                                        Toast.LENGTH_SHORT)
+                                        Toast.LENGTH_SHORT
+                                    )
                                     toast.show()
                                 }
                             }
@@ -133,13 +164,19 @@ class LoginActivity : AppCompatActivity() {
                             }
                         }*/
                     } catch (e: Exception) {
-                        Log.d("mytag","Exception Inserted : ${e.message}")
+                        Log.d("mytag", "Exception Inserted : ${e.message}")
                         e.printStackTrace()
                     }
                 }
-            }else{
+            } else {
 
+                Toast.makeText(this@LoginActivity,
+                    getString(R.string.plese_enter_valid_credentials),Toast.LENGTH_LONG).show()
             }
+        }else{
+                Toast.makeText(this@LoginActivity,
+                    getString(R.string.please_check_internet_connection),Toast.LENGTH_LONG).show()
+        }
         }
     }
 
