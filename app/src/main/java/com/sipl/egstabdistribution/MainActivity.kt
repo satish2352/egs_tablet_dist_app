@@ -18,6 +18,7 @@ import com.sipl.egstabdistribution.adapter.MyPageNumberAdapter
 import com.sipl.egstabdistribution.adapter.TabDistributionListAdapter
 import com.sipl.egstabdistribution.databinding.ActivityMainBinding
 import com.sipl.egstabdistribution.model.TabDistList.TabUser
+import com.sipl.egstabdistribution.ui.BeneficiaryDetailsActivity
 import com.sipl.egstabdistribution.ui.LoginActivity
 import com.sipl.egstabdistribution.ui.RegistrationActivity
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
@@ -33,7 +34,7 @@ import kotlinx.coroutines.withContext
 
 
 class MainActivity : AppCompatActivity(),
-    MyPageNumberAdapter.OnPageNumberClickListener {
+    MyPageNumberAdapter.OnPageNumberClickListener,TabDistributionListAdapter.OnBeneficiaryClickListener {
     lateinit var binding: ActivityMainBinding
     private lateinit var dialog: CustomProgressDialog
     private  var isInternetAvailable=false
@@ -49,7 +50,7 @@ class MainActivity : AppCompatActivity(),
         supportActionBar?.title=resources.getString(R.string.beneficiary_list)
         dialog= CustomProgressDialog(this)
         apiService= ApiClient.create(this)
-        adapter= TabDistributionListAdapter(tabUserList,0,pageSize)
+        adapter= TabDistributionListAdapter(tabUserList,0,pageSize,this)
         binding.recyclerView.layoutManager= LinearLayoutManager(this, RecyclerView.VERTICAL,false)
         binding.recyclerViewPageNumbers.layoutManager= LinearLayoutManager(this, RecyclerView.HORIZONTAL,false)
         binding.recyclerView.adapter=adapter
@@ -65,6 +66,9 @@ class MainActivity : AppCompatActivity(),
                 Log.d("##", "=>" + connectivity.state())
                 if (connectivity.state().toString() == "CONNECTED") {
                     isInternetAvailable = true
+                    CoroutineScope(Dispatchers.IO).launch {
+                        getDataFromServer("1",pageSize.toString())
+                    }
                 } else {
                     isInternetAvailable = false
 
@@ -136,7 +140,7 @@ class MainActivity : AppCompatActivity(),
                             withContext(Dispatchers.Main){
                                 binding.tvNoRecords.visibility=View.GONE
                                 tabUserList= response.body()?.data?.toMutableList()!!
-                                adapter= TabDistributionListAdapter(tabUserList,Integer.parseInt(response.body()?.page_no_to_hilight),pageSize)
+                                adapter= TabDistributionListAdapter(tabUserList,Integer.parseInt(response.body()?.page_no_to_hilight),pageSize,this@MainActivity)
                                 Log.d("mytag",""+tabUserList.size)
                                 Log.d("mytag",""+response.body()?.status)
                                 binding.recyclerView.adapter=adapter
@@ -223,5 +227,20 @@ class MainActivity : AppCompatActivity(),
 
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onClick(user: TabUser) {
+
+        if(isInternetAvailable){
+            val intent= Intent(this@MainActivity, BeneficiaryDetailsActivity::class.java)
+            intent.putExtra("id",user.id.toString())
+            Log.d("mytag",user.id.toString())
+            startActivity(intent)
+        }else{
+
+            Toast.makeText(this@MainActivity,
+                getString(R.string.please_check_internet_connection),Toast.LENGTH_LONG).show()
+        }
+
     }
 }

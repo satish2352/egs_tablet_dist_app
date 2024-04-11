@@ -13,13 +13,17 @@ import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.model.TabDistList.TabUser
 import com.sipl.egstabdistribution.ui.BeneficiaryDetailsActivity
 
-class TabDistributionListAdapter(var tabUserList: MutableList<TabUser>,var currentPage:Int,var pageSize:Int) : RecyclerView.Adapter<TabDistributionListAdapter.ViewHolder>() {
+class TabDistributionListAdapter(var tabUserList: MutableList<TabUser>,var currentPage:Int,var pageSize:Int,var onBeneficiaryClickListener: OnBeneficiaryClickListener) : RecyclerView.Adapter<TabDistributionListAdapter.ViewHolder>() {
     class ViewHolder(itemView: View) :RecyclerView.ViewHolder(itemView) {
         val tvFullName=itemView.findViewById<TextView>(R.id.tvFullName)
         val tvSrNo=itemView.findViewById<TextView>(R.id.tvSrNo)
         val tvAddress=itemView.findViewById<TextView>(R.id.tvAddress)
         val tvMobile=itemView.findViewById<TextView>(R.id.tvMobile)
         val ivPhoto=itemView.findViewById<ImageView>(R.id.ivPhoto)
+    }
+
+    interface OnBeneficiaryClickListener{
+        fun onClick(user:TabUser);
     }
 
     override fun onCreateViewHolder(
@@ -43,11 +47,15 @@ class TabDistributionListAdapter(var tabUserList: MutableList<TabUser>,var curre
                 .override(90,75)
                 .into(holder.ivPhoto)
 
-            holder.itemView.setOnClickListener {
-                val intent= Intent(holder.itemView.context,BeneficiaryDetailsActivity::class.java)
+           /* holder.itemView.setOnClickListener {
+               *//* val intent= Intent(holder.itemView.context,BeneficiaryDetailsActivity::class.java)
                 intent.putExtra("id",tabUserList[position].id.toString())
                 Log.d("mytag",tabUserList[position].id.toString())
-                holder.itemView.context.startActivity(intent)
+                holder.itemView.context.startActivity(intent)*//*
+            }*/
+
+            holder.itemView.setOnClickListener {
+                onBeneficiaryClickListener.onClick(tabUserList[position])
             }
         }catch (e:Exception){
 

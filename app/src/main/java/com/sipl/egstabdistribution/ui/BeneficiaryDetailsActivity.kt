@@ -20,6 +20,8 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
+import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
+import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
 import com.google.gson.Gson
 import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.databinding.ActivityBeneficiaryDetailsBinding
@@ -28,6 +30,8 @@ import com.sipl.egstabdistribution.model.detailsbyid.UserDetailsModel
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
 import com.sipl.egstabdistribution.webservice.ApiClient
 import io.getstream.photoview.PhotoView
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -40,6 +44,8 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
     private var aadharImage=""
     private lateinit var dialog: CustomProgressDialog
     private var beneficiaryid=""
+    private  var isInternetAvailable=false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityBeneficiaryDetailsBinding.inflate(layoutInflater)
@@ -49,7 +55,7 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
         dialog= CustomProgressDialog(this)
         beneficiaryid=intent.getStringExtra("id").toString()
         Log.d("mytag",beneficiaryid)
-        getLabourDetails(beneficiaryid)
+       // getLabourDetails(beneficiaryid)
         binding.ivGramsevakId.setOnClickListener {
             showPhotoZoomDialog(gramsevakIdPhoto)
         }
@@ -62,6 +68,21 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
         binding.ivImeiPhoto.setOnClickListener {
             showPhotoZoomDialog(imeiPhoto)
         }
+        ReactiveNetwork
+            .observeNetworkConnectivity(applicationContext)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ connectivity: Connectivity ->
+                Log.d("##", "=>" + connectivity.state())
+                if (connectivity.state().toString() == "CONNECTED") {
+                    isInternetAvailable = true
+                    getLabourDetails(beneficiaryid)
+                } else {
+                    isInternetAvailable = false
+
+                }
+            }) { throwable: Throwable? -> }
+
 
 
     }
@@ -132,19 +153,25 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
             finish()
         }
         if(item.itemId==R.id.action_delete){
-            AlertDialog.Builder(this)
-                .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_beneficiary_details))
-                .setIcon(R.drawable.ic_delete)
-                .setTitle(R.string.delete)
-                .setPositiveButton("Yes") { dialog, _ ->
-                    deleteBeneficiary(beneficiaryid)
-                    dialog.dismiss()
-                }
-                .setNegativeButton("No") { dialog, _ ->
-                    dialog.dismiss()
-                    // Handle the case when the user chooses not to enable GPS
-                }
-                .show()
+            if(isInternetAvailable){
+                AlertDialog.Builder(this)
+                    .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_beneficiary_details))
+                    .setIcon(R.drawable.ic_delete)
+                    .setTitle(R.string.delete)
+                    .setPositiveButton("Yes") { dialog, _ ->
+                        deleteBeneficiary(beneficiaryid)
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("No") { dialog, _ ->
+                        dialog.dismiss()
+                        // Handle the case when the user chooses not to enable GPS
+                    }
+                    .show()
+
+            }else{
+                Toast.makeText(this@BeneficiaryDetailsActivity,
+                    getString(R.string.please_check_internet_connection),Toast.LENGTH_LONG).show()
+            }
 
         }
         return super.onOptionsItemSelected(item)
@@ -222,7 +249,7 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
 
         }
     }
-    fun loadImageWithRetry(imageView: ImageView, url: String) {
+    fun loadImageWithRetry(imageView: ImageView, url: String,retryCount: Int = 3) {
         try {
             Glide.with(imageView.context)
                 .load(url)
@@ -233,7 +260,6 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
                         .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache strategy
                         .skipMemoryCache(false) // Whether to skip the memory cache
                         .override(200,200) // Specify the size of the image
-                        .centerCrop() // Crop type
 
                 )
                 .listener(object : RequestListener<Drawable> {
@@ -244,18 +270,8 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
                         isFirstResource: Boolean
                     ): Boolean {
                         // Retry once
-                        Glide.with(imageView.context)
-                            .load(url)
-                            .apply(
-                                RequestOptions()
-                                    .placeholder(R.drawable.progress_bg) // Placeholder image while loading
-                                    .error(R.drawable.ic_error) // Image to display if loading fails
-                                    .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache strategy
-                                    .skipMemoryCache(false) // Whether to skip the memory cache
-                                    .override(200,200) // Specify the size of the image
-                                    .centerCrop() // Crop type
-                            )
-                            .into(imageView)
+
+                        loadImageWithRetry(imageView,url,retryCount-1)
                         return false // Return false to let Glide handle the error
                     }
                     override fun onResourceReady(

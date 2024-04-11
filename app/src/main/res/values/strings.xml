@@ -49,4 +49,5 @@
     <string name="exit">Exit</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="please_check_internet_connection">Please check internet connection</string>
 </resources>
