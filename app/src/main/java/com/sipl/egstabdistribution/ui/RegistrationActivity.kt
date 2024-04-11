@@ -249,18 +249,43 @@ class RegistrationActivity : AppCompatActivity() {
               Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
           }
         }
+
         binding.ivChangeAadhar.setOnClickListener {
-            captureImage(REQUEST_CODE_AADHAR_CARD)
+
+            if(isInternetAvailable){
+                captureImage(REQUEST_CODE_AADHAR_CARD)
+            }else{
+                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
+            }
+
         }
         binding.ivChangePhoto.setOnClickListener {
-            captureImage(REQUEST_CODE_PHOTO)
+
+            if(isInternetAvailable){
+                captureImage(REQUEST_CODE_PHOTO)
+            }else{
+                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
+            }
+
         }
         binding.ivChangeGramsevakId.setOnClickListener {
-            captureImage(REQUEST_CODE_GRAMSEVAK)
+
+            if(isInternetAvailable){
+                captureImage(REQUEST_CODE_GRAMSEVAK)
+            }else{
+                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
+            }
         }
         binding.ivChangeTabletImei.setOnClickListener {
-            captureImage(REQUEST_CODE_TABLET_IMEI)
+
+            if(isInternetAvailable){
+                captureImage(REQUEST_CODE_TABLET_IMEI)
+            }else{
+                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
+            }
+
         }
+
         CoroutineScope(Dispatchers.IO).launch {
             districtList=areaDao.getAllDistrict()
             Log.d("mytag",districtList.size.toString())
