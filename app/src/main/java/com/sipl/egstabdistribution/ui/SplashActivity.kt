@@ -156,9 +156,6 @@ class SplashActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }
-
-
-
     fun mapDataToArea(apiResponseList: List<AreaUpdateData>): List<AreaItem> {
         return apiResponseList.map { apiResponse ->
             AreaItem(

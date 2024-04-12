@@ -51,11 +51,13 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.internal.wait
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -141,9 +143,10 @@ class RegistrationActivity : AppCompatActivity() {
                             Glide.with(this@RegistrationActivity).load(uriAadhar).
                             override(150,120).into(binding.ivAadhar)
                             aadharIdImagePath= uriAadhar.toString()
-                            dialog.show()
                             CoroutineScope(Dispatchers.IO).launch {
-                                aadharCardFile=uriStringToTempFile(this@RegistrationActivity,uriAadhar.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
+                                runOnUiThread {  dialog.show() }
+                                val aadharCardPhotoJob=async { aadharCardFile=uriStringToTempFile(this@RegistrationActivity,uriAadhar.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                                aadharCardPhotoJob.await()
                                 withContext(Dispatchers.Main){
                                     dialog.dismiss()
                                 }
@@ -160,9 +163,10 @@ class RegistrationActivity : AppCompatActivity() {
                             Glide.with(this@RegistrationActivity).load(uriGramsevakId).
                             override(150,120).into(binding.ivGramsevakId)
                             gramsevakIdImagePath= uriGramsevakId.toString()
-                            dialog.show()
                             CoroutineScope(Dispatchers.IO).launch {
-                                gramsevakIdPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriGramsevakId.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
+                                runOnUiThread {  dialog.show() }
+                                val gramsevakPhotoJob=async { gramsevakIdPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriGramsevakId.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                                gramsevakPhotoJob.await()
                                 try {
                                     getAddressFromLatLong()
                                 } finally {
@@ -184,9 +188,11 @@ class RegistrationActivity : AppCompatActivity() {
                             Glide.with(this@RegistrationActivity).load(uriPhoto).
                                 override(150,120).into(binding.ivPhoto)
                             photoImagePath= uriPhoto.toString()
-                            dialog.show()
+
                             CoroutineScope(Dispatchers.IO).launch {
-                                beneficiaryPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriPhoto.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
+                                runOnUiThread {  dialog.show() }
+                                val beneficiaryPhotoJob=async { beneficiaryPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriPhoto.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                                beneficiaryPhotoJob.await()
                                 withContext(Dispatchers.Main){
                                     dialog.dismiss()
                                 }
@@ -201,9 +207,10 @@ class RegistrationActivity : AppCompatActivity() {
                             Glide.with(this@RegistrationActivity).load(uriTabletImei).
                             override(150,120).into(binding.ivTabletImei)
                             tabletImeiPhotoPath= uriTabletImei.toString()
-                            dialog.show()
                             CoroutineScope(Dispatchers.IO).launch {
-                                imeiPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriTabletImei.toString(),binding.etLocation.text.toString(),addressFromLatLong)!!
+                                runOnUiThread {  dialog.show() }
+                                val imeiPhotoJob= async {                                 imeiPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriTabletImei.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                                imeiPhotoJob.await()
                                 withContext(Dispatchers.Main){
                                     if(imeiPhotoFile.length()>0){
                                        Log.d("mytag",imeiPhotoFile.length().toString())
@@ -706,26 +713,56 @@ class RegistrationActivity : AppCompatActivity() {
                 resources.getString(R.string.enter_aadhar_card_number)
             validationResults.add(false)
         }
+
+        if (aadharIdImagePath.toString().length > 0 &&  aadharCardFile.length()>0) {
+            validationResults.add(true)
+            Log.d("mytag","aadharIdImagePath => true")
+        } else {
+            validationResults.add(false)
+            Log.d("mytag","aadharIdImagePath => false")
+        }
+        if (gramsevakIdImagePath.toString().length > 0 &&   gramsevakIdPhotoFile.length()>0) {
+            validationResults.add(true)
+            Log.d("mytag","gramsevakIdImagePath => true")
+        } else {
+            validationResults.add(false)
+            Log.d("mytag","gramsevakIdImagePath => false")
+        }
+        if (photoImagePath.toString().length > 0 &&  beneficiaryPhotoFile.length()>0) {
+            validationResults.add(true)
+            Log.d("mytag","photoImagePath => true")
+        } else {
+            validationResults.add(false)
+            Log.d("mytag","photoImagePath => false")
+        }
+        if (tabletImeiPhotoPath.toString().length > 0 &&  imeiPhotoFile.length()>0) {
+            validationResults.add(true)
+            Log.d("mytag","tabletImeiPhotoPath => true")
+        } else {
+            validationResults.add(false)
+            Log.d("mytag","tabletImeiPhotoPath => false")
+        }
+
         return !validationResults.contains(false)
     }
     private fun validateDocuments(): Boolean {
         val validationResults = mutableListOf<Boolean>()
-        if (aadharIdImagePath.toString().length > 0 && !aadharIdImagePath.isNullOrBlank() && aadharCardFile.length()>0) {
+        if (aadharIdImagePath.toString().length > 0 &&  aadharCardFile.length()>0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
         }
-        if (gramsevakIdImagePath.toString().length > 0 && !gramsevakIdImagePath.isNullOrBlank() && gramsevakIdPhotoFile.length()>0) {
+        if (gramsevakIdImagePath.toString().length > 0 &&   gramsevakIdPhotoFile.length()>0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
         }
-        if (photoImagePath.toString().length > 0 && !photoImagePath.isNullOrBlank() && beneficiaryPhotoFile.length()>0) {
+        if (photoImagePath.toString().length > 0 &&  beneficiaryPhotoFile.length()>0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
         }
-        if (tabletImeiPhotoPath.toString().length > 0 && !tabletImeiPhotoPath.isNullOrBlank() && imeiPhotoFile.length()>0) {
+        if (tabletImeiPhotoPath.toString().length > 0 &&  imeiPhotoFile.length()>0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
