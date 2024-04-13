@@ -1,13 +1,19 @@
 package com.sipl.egstabdistribution.ui
 
+import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
 import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
+import com.permissionx.guolindev.PermissionX
 import com.sipl.egstabdistribution.MainActivity
 import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.database.AppDatabase
@@ -177,6 +183,59 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this@LoginActivity,
                     getString(R.string.please_check_internet_connection),Toast.LENGTH_LONG).show()
         }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requestWritePermission(this@LoginActivity)
+    }
+
+    fun requestWritePermission(context: Context?): Boolean {
+        // Check if the permission is already granted
+
+        try {
+            return if (ContextCompat.checkSelfPermission(
+                    context!!,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                // Permission already granted
+                true
+            } else {
+                // Check Android version for handling permission request
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    // Request permission at runtime for devices running Android 6.0 to Android 9 (excluding Android 10+)
+                    /*ActivityCompat.requestPermissions(
+                        (context as Activity?)!!,
+                        arrayOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        WRITE_PERMISSION_REQUEST_CODE
+                    )*/
+                    PermissionX.init(this@LoginActivity)
+                        .permissions(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .onExplainRequestReason { scope, deniedList ->
+                            scope.showRequestReasonDialog(deniedList, "Core fundamental are based on these permissions", "OK", "Cancel")
+                        }
+                        .onForwardToSettings { scope, deniedList ->
+                            scope.showForwardToSettingsDialog(deniedList, "You need to allow necessary permissions in Settings manually", "OK", "Cancel")
+                        }
+                        .request { allGranted, grantedList, deniedList ->
+                            if (allGranted) {
+
+                            } else {
+                                Toast.makeText(this@LoginActivity, "These permissions are denied: $deniedList", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    // Permission will be handled in onRequestPermissionsResult() callback
+                    false
+                } else {
+                    // No need to request permission for devices running Android 10+
+                    false
+                }
+            }
+        }catch (e:Exception){
+
+            return false
         }
     }
 
