@@ -294,7 +294,8 @@ class RegistrationActivity : AppCompatActivity() {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            districtList=areaDao.getAllDistrict()
+            val waitingJob=async { districtList=areaDao.getAllDistrict() }
+            waitingJob.await()
             Log.d("mytag",districtList.size.toString())
             withContext(Dispatchers.Main){
                 for (district in districtList){
