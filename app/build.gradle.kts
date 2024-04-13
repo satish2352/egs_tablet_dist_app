@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -15,21 +17,35 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
+
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val p = Properties()
+            p.load(project.rootProject.file("local.properties").reader())
+            val yourKey: String = p.getProperty("BASE_URL")
+            buildConfigField("String", "BASE_URL", "\"$yourKey\"")
+
+        }
+        debug {
+            val p = Properties()
+            p.load(project.rootProject.file("local.properties").reader())
+            val yourKey: String = p.getProperty("BASE_URL")
+            buildConfigField("String", "BASE_URL", "\"$yourKey\"")
         }
     }
     buildFeatures{
         viewBinding=true
+        buildConfig=true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -38,6 +54,8 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
+
 }
 
 dependencies {

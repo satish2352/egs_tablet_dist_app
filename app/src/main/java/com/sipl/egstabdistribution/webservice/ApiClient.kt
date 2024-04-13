@@ -1,6 +1,7 @@
 package com.sipl.egstabdistribution.webservice
 
 import android.content.Context
+import com.sipl.egstabdistribution.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -10,9 +11,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-
-    private const val BASE_URL = "https://egstabletdistribution.sumagotest.in/api/"
-
+    private const val BASE_URL = BuildConfig.BASE_URL
     val loggingInterceptor = HttpLoggingInterceptor()
 
     private fun getAuthInterceptor(context: Context): AuthInterceptor {
@@ -20,15 +19,6 @@ object ApiClient {
     }
 
     fun create(context: Context): ApiService {
-        /*val properties = Properties()
-        try {
-            context.assets.open("local.properties")
-                .use { inputStream -> properties.load(inputStream) }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        Log.d("mytag",""+properties.getProperty("BASE_URL"))*/
-
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val client = OkHttpClient.Builder()
             .addInterceptor(getAuthInterceptor(context))
