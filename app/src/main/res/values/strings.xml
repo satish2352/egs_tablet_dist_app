@@ -51,4 +51,5 @@
     <string name="no">No</string>
     <string name="please_check_internet_connection">Please check internet connection</string>
     <string name="plese_enter_valid_credentials">Please enter valid credentials</string>
+    <string name="submit">Submit</string>
 </resources>
