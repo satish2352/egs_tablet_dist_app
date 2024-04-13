@@ -21,6 +21,7 @@ import com.sipl.egstabdistribution.utils.MySharedPref
 import com.sipl.egstabdistribution.webservice.ApiClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Call
@@ -49,21 +50,26 @@ class SplashActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             mySharedPref.setDeviceId(deviceId)
             if(!mySharedPref.getAllAreaEntries())
-                if(areaDao.getAllArea().isEmpty())
+                if(areaDao.getAllArea().size>44342)
                 {
-                    val items = readJsonFromAssets(this@SplashActivity, "address.json")
-                    areaDao.insertInitialRecords(items)
-                    val size=areaDao.getAllArea().size;
-                    Log.d("mytag","Area Entries $size")
-                    if(size==44342){
-                        mySharedPref.setAllAreaEntries(true)
-                    }else{
-                        mySharedPref.setAllAreaEntries(false)
+                    val waitingJob=async {
+                        val items = readJsonFromAssets(this@SplashActivity, "address.json")
+                        areaDao.insertInitialRecords(items)
+                        val size=areaDao.getAllArea().size;
+                        Log.d("mytag","Area Entries $size")
+                        if(size==44342){
+                            mySharedPref.setAllAreaEntries(true)
+                        }else{
+                            mySharedPref.setAllAreaEntries(false)
+                        }
                     }
+                    waitingJob.await()
                 }else{
                     Log.d("mytag","Not empty")
                 }
-            fetchMastersFromServer()
+
+            val masterWaitingJob=async {   fetchMastersFromServer() }
+            masterWaitingJob.await()
             withContext(Dispatchers.Main) {
                 val mySharedPref=MySharedPref(this@SplashActivity)
                 if(mySharedPref.getIsLoggedIn()){
