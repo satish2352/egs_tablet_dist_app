@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity(),
     private var tabUserList= mutableListOf<TabUser>()
     private var pageSize=50
     private lateinit var paginationAdapter: MyPageNumberAdapter
+    private var currentPage=""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityMainBinding.inflate(layoutInflater)
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity(),
         binding.recyclerViewPageNumbers.setScrollbarFadingEnabled(false)
         adapter.notifyDataSetChanged()
         paginationAdapter= MyPageNumberAdapter(0,"0",this)
+        currentPage="1"
         ReactiveNetwork
             .observeNetworkConnectivity(applicationContext)
             .subscribeOn(Schedulers.io())
@@ -126,7 +128,7 @@ class MainActivity : AppCompatActivity(),
     override fun onResume() {
         super.onResume()
         CoroutineScope(Dispatchers.IO).launch {
-            getDataFromServer("1",pageSize.toString())
+            getDataFromServer(currentPage,pageSize.toString())
         }
     }
 
@@ -197,6 +199,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onPageNumberClicked(pageNumber: Int) {
+        currentPage="$pageNumber"
         Log.d("mytag","ListActivity :: getDataFromServer "+pageNumber)
         CoroutineScope(Dispatchers.IO).launch {
             getDataFromServer("$pageNumber",pageSize.toString())
