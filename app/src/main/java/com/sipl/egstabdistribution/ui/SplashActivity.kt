@@ -50,7 +50,7 @@ class SplashActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             mySharedPref.setDeviceId(deviceId)
             if(!mySharedPref.getAllAreaEntries())
-                if(areaDao.getAllArea().size>44342)
+                if(areaDao.getAllArea().size<44342)
                 {
                     val waitingJob=async {
                         val items = readJsonFromAssets(this@SplashActivity, "address.json")
