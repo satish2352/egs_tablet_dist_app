@@ -5,7 +5,8 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -23,17 +24,19 @@
         android:theme="@style/Theme.EGSRegistration"
         tools:targetApi="31">
         <activity
-            android:name="com.sipl.egstabdistribution.ui.BeneficiaryDetailsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.sipl.egstabdistribution.ui.RegistrationActivity"
+            android:name=".ui.CameraActivity"
             android:exported="false" />
         <activity
-            android:name="com.sipl.egstabdistribution.ui.LoginActivity"
+            android:name=".ui.BeneficiaryDetailsActivity"
             android:exported="false" />
         <activity
-            android:name="com.sipl.egstabdistribution.ui.SplashActivity"
+            android:name=".ui.RegistrationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,7 +45,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.sipl.egstabdistribution.MainActivity"
+            android:name=".MainActivity"
             android:exported="true" />
 
         <provider

@@ -1,7 +1,7 @@
 package com.sipl.egstabdistribution.ui
 
 import android.Manifest
-import android.content.ContentResolver
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,9 +13,7 @@ import android.location.Address
 import android.location.Geocoder
 import android.location.LocationManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore
 import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
@@ -27,11 +25,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
 import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
 import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -46,7 +42,6 @@ import com.sipl.egstabdistribution.databinding.ActivityRegistrationBinding
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
 import com.sipl.egstabdistribution.utils.MyValidator
 import com.sipl.egstabdistribution.webservice.ApiClient
-import com.sipl.egstabdistribution.webservice.FileInfo
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
@@ -57,12 +52,10 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okhttp3.internal.wait
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -88,14 +81,11 @@ class RegistrationActivity : AppCompatActivity() {
     private  val REQUEST_CODE_PHOTO = 200
     private  val REQUEST_CODE_GRAMSEVAK = 300
     private  val REQUEST_CODE_TABLET_IMEI = 400
-    private  var gramsevakId:String=""
     private  var aadharIdImagePath:String=""
     private  var photoImagePath:String=""
     private  var gramsevakIdImagePath:String=""
     private  var tabletImeiPhotoPath:String=""
-    private lateinit var cameraLauncher: ActivityResultLauncher<Uri>
     private lateinit var dialog: CustomProgressDialog
-    private val uriMap = mutableMapOf<Int, Uri>()
     private var isAadharVerified=false
     private lateinit var aadharCardFile:File
     private lateinit var beneficiaryPhotoFile:File
@@ -131,106 +121,6 @@ class RegistrationActivity : AppCompatActivity() {
             gramsevakIdPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"gramsevakIdPhoto")!!
         }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        try {
-                cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-                    if (success) {
-                        Log.d("mytag", "Success => ${uriMap.values}")
-                        // Retrieve URI for Aadhar Card
-                        val uriAadhar = uriMap[REQUEST_CODE_AADHAR_CARD]
-                        if (uriAadhar != null) {
-                            Log.d("mytag", "URI for Aadhar Card: $uriAadhar")
-                            //binding.ivAadhar.setImageURI(uriAadhar)
-                            Glide.with(this@RegistrationActivity).load(uriAadhar).
-                            override(150,120).into(binding.ivAadhar)
-                            aadharIdImagePath= uriAadhar.toString()
-                            CoroutineScope(Dispatchers.IO).launch {
-                                runOnUiThread {  dialog.show() }
-                                val aadharCardPhotoJob=async { aadharCardFile=uriStringToTempFile(this@RegistrationActivity,uriAadhar.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
-                                aadharCardPhotoJob.await()
-                                withContext(Dispatchers.Main){
-                                    dialog.dismiss()
-                                }
-
-                            }
-                        } else {
-                            Log.d("mytag", "URI for Aadhar Card is null")
-                        }
-                        // Retrieve URI for MGNREGA Card
-                        val uriGramsevakId = uriMap[REQUEST_CODE_GRAMSEVAK]
-                        if (uriGramsevakId != null) {
-                            Log.d("mytag", "URI for MGNREGA Card: $uriGramsevakId")
-                            //binding.ivGramsevakId.setImageURI(uriGramsevakId)
-                            Glide.with(this@RegistrationActivity).load(uriGramsevakId).
-                            override(150,120).into(binding.ivGramsevakId)
-                            gramsevakIdImagePath= uriGramsevakId.toString()
-                            CoroutineScope(Dispatchers.IO).launch {
-                                runOnUiThread {  dialog.show() }
-                                val gramsevakPhotoJob=async { gramsevakIdPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriGramsevakId.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
-                                gramsevakPhotoJob.await()
-                                try {
-                                    getAddressFromLatLong()
-                                } finally {
-
-                                }
-                                withContext(Dispatchers.Main){
-                                    dialog.dismiss()
-                                }
-
-                            }
-                        } else {
-                            Log.d("mytag", "URI for MGNREGA Card is null")
-                        }
-                        // Retrieve URI for Photo
-                        val uriPhoto = uriMap[REQUEST_CODE_PHOTO]
-                        if (uriPhoto != null) {
-                            Log.d("mytag", "URI for Photo: $uriPhoto")
-                            //binding.ivPhoto.setImageURI(uriPhoto)
-                            Glide.with(this@RegistrationActivity).load(uriPhoto).
-                                override(150,120).into(binding.ivPhoto)
-                            photoImagePath= uriPhoto.toString()
-
-                            CoroutineScope(Dispatchers.IO).launch {
-                                runOnUiThread {  dialog.show() }
-                                val beneficiaryPhotoJob=async { beneficiaryPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriPhoto.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
-                                beneficiaryPhotoJob.await()
-                                withContext(Dispatchers.Main){
-                                    dialog.dismiss()
-                                }
-                            }
-                        } else {
-                            Log.d("mytag", "URI for Photo is null")
-                        }
-                        val uriTabletImei = uriMap[REQUEST_CODE_TABLET_IMEI]
-                        if (uriTabletImei != null) {
-                            Log.d("mytag", "URI for Photo: $uriTabletImei")
-                            //binding.ivTabletImei.setImageURI(uriTabletImei)
-                            Glide.with(this@RegistrationActivity).load(uriTabletImei).
-                            override(150,120).into(binding.ivTabletImei)
-                            tabletImeiPhotoPath= uriTabletImei.toString()
-                            CoroutineScope(Dispatchers.IO).launch {
-                                runOnUiThread {  dialog.show() }
-                                val imeiPhotoJob= async {                                 imeiPhotoFile=uriStringToTempFile(this@RegistrationActivity,uriTabletImei.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
-                                imeiPhotoJob.await()
-                                withContext(Dispatchers.Main){
-                                    if(imeiPhotoFile.length()>0){
-                                       Log.d("mytag",imeiPhotoFile.length().toString())
-                                        dialog.dismiss()
-                                    }
-
-                                }
-                            }
-                        } else {
-                            Log.d("mytag", "URI for Photo is null")
-                        }
-                    } else {
-                        // Image capture failed or was canceled
-                        Log.d("mytag", "Failed")
-                    }
-                }
-        } catch (e: Exception) {
-            Log.d("mytag","cameraLauncher=>registerForActivityException=>"+e.message)
-            e.printStackTrace()
-        }
         binding.btnRegister.setOnClickListener {
           if(isInternetAvailable){
               if(validateFieldsX()){
@@ -260,16 +150,15 @@ class RegistrationActivity : AppCompatActivity() {
         binding.ivChangeAadhar.setOnClickListener {
 
             if(isInternetAvailable){
-                captureImage(REQUEST_CODE_AADHAR_CARD)
+                startCameraActivity(REQUEST_CODE_AADHAR_CARD)
             }else{
                 Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
             }
 
         }
         binding.ivChangePhoto.setOnClickListener {
-
             if(isInternetAvailable){
-                captureImage(REQUEST_CODE_PHOTO)
+                startCameraActivity(REQUEST_CODE_PHOTO)
             }else{
                 Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
             }
@@ -278,21 +167,20 @@ class RegistrationActivity : AppCompatActivity() {
         binding.ivChangeGramsevakId.setOnClickListener {
 
             if(isInternetAvailable){
-                captureImage(REQUEST_CODE_GRAMSEVAK)
+
+                startCameraActivity(REQUEST_CODE_GRAMSEVAK)
             }else{
                 Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
             }
         }
         binding.ivChangeTabletImei.setOnClickListener {
-
             if(isInternetAvailable){
-                captureImage(REQUEST_CODE_TABLET_IMEI)
+
+                startCameraActivity(REQUEST_CODE_TABLET_IMEI)
             }else{
                 Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
             }
-
         }
-
         CoroutineScope(Dispatchers.IO).launch {
             val waitingJob=async { districtList=areaDao.getAllDistrict() }
             waitingJob.await()
@@ -321,46 +209,6 @@ class RegistrationActivity : AppCompatActivity() {
             }
         })
 
-    }
-    suspend fun uriStringToBitmap(context: Context, uriString: String, text: String, addressText: String): Uri? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val uri = Uri.parse(uriString)
-                val futureTarget = Glide.with(context)
-                    .asBitmap()
-                    .load(uri)
-                    .submit()
-                val bitmap = futureTarget.get()
-
-                // Add text overlay to the bitmap
-                val canvas = Canvas(bitmap)
-                val paint = Paint().apply {
-                    color = Color.RED
-                    textSize = 50f // Text size in pixels
-                    isAntiAlias = true
-                    style = Paint.Style.FILL
-                }
-                val currentDateTime = Date()
-                val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                val formattedDateTime = formatter.format(currentDateTime)
-                val x = 50f // Adjust the x-coordinate as needed
-                val y = bitmap.height.toFloat() - 50f // Adjust the y-coordinate as needed
-                val xAddress = 50f // Adjust the x-coordinate as needed
-                val yAddress = bitmap.height.toFloat() - 100f
-                canvas.drawText(text, x, y, paint)
-                canvas.drawText(addressText, xAddress, yAddress, paint)
-                canvas.drawText(formattedDateTime, xAddress, yAddress-50, paint)
-
-                // Save the modified bitmap back to the same location
-               // saveBitmapToFile(context, bitmap, uri)
-
-                uri // Return the URI of the modified bitmap
-            } catch (e: Exception) {
-                Log.d("mytag","Exception => "+e.message)
-                e.printStackTrace()
-                null
-            }
-        }
     }
     suspend fun uriStringToTempFile(context: Context, uriString: String, text: String, addressText: String): File? {
         return withContext(Dispatchers.IO) {
@@ -394,7 +242,7 @@ class RegistrationActivity : AppCompatActivity() {
                 // Save the modified bitmap to a temporary file
                 val tempFile = File.createTempFile("temp_image", ".jpg", context.cacheDir)
                 val outputStream = FileOutputStream(tempFile)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 20, outputStream)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 30, outputStream)
                 outputStream.close()
 
                 tempFile // Return the temporary file containing the modified bitmap
@@ -405,17 +253,6 @@ class RegistrationActivity : AppCompatActivity() {
                 e.printStackTrace()
                 tempEmptyFile
             }
-        }
-    }
-
-    private fun saveBitmapToFile(context: Context, bitmap: Bitmap, uri: Uri) {
-        try {
-            val outputStream = context.contentResolver.openOutputStream(uri)
-            outputStream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 10, it) }
-            outputStream?.flush()
-            outputStream?.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
     override fun onResume() {
@@ -537,89 +374,94 @@ class RegistrationActivity : AppCompatActivity() {
         }
     }
     private fun initializeFields() {
-        talukaList=ArrayList<AreaItem>()
-        villageList=ArrayList<AreaItem>()
-        val districtAdapter = ArrayAdapter(
-            this, android.R.layout.simple_list_item_1, districtNames
-        )
-        binding.actDistrict.setAdapter(districtAdapter)
-        binding.actDistrict.setOnItemClickListener { parent, view, position, id ->
-            districtId=districtList[position].location_id
-            binding.actTaluka.setText("")
-            binding.actVillage.setText("")
-            CoroutineScope(Dispatchers.IO).launch {
-                talukaNames.clear();
-                talukaList=areaDao.getAllTalukas(districtList[position].location_id)
-                for (taluka in talukaList){
-                    talukaNames.add(taluka.name)
-                }
-                val talukaAdapter = ArrayAdapter(
-                    this@RegistrationActivity, android.R.layout.simple_list_item_1, talukaNames
-                )
-                withContext(Dispatchers.Main){
-                    binding.actTaluka.setAdapter(talukaAdapter)
-                }
-            }
-        }
-        binding.actTaluka.setOnItemClickListener { parent, view, position, id ->
-            CoroutineScope(Dispatchers.IO).launch {
-                talukaId=talukaList[position].location_id
-                villageNames.clear();
+
+        try {
+            talukaList=ArrayList<AreaItem>()
+            villageList=ArrayList<AreaItem>()
+            val districtAdapter = ArrayAdapter(
+                this, android.R.layout.simple_list_item_1, districtNames
+            )
+            binding.actDistrict.setAdapter(districtAdapter)
+            binding.actDistrict.setOnItemClickListener { parent, view, position, id ->
+                districtId=districtList[position].location_id
+                binding.actTaluka.setText("")
                 binding.actVillage.setText("")
-                villageList=areaDao.getVillageByTaluka(talukaList[position].location_id)
-                for (village in villageList){
-                    villageNames.add(village.name)
-                }
-                val villageAdapter = ArrayAdapter(
-                    this@RegistrationActivity, android.R.layout.simple_list_item_1, villageNames
-                )
-                Log.d("mytag",""+villageNames.size)
-                withContext(Dispatchers.Main){
-                    binding.actVillage.setAdapter(villageAdapter)
-                    binding.actVillage.setOnFocusChangeListener { abaad, asd ->
-                        binding.actVillage.showDropDown()
+                CoroutineScope(Dispatchers.IO).launch {
+                    talukaNames.clear();
+                    talukaList=areaDao.getAllTalukas(districtList[position].location_id)
+                    for (taluka in talukaList){
+                        talukaNames.add(taluka.name)
                     }
-                    binding.actVillage.setOnClickListener {
-                        binding.actVillage.showDropDown()
+                    val talukaAdapter = ArrayAdapter(
+                        this@RegistrationActivity, android.R.layout.simple_list_item_1, talukaNames
+                    )
+                    withContext(Dispatchers.Main){
+                        binding.actTaluka.setAdapter(talukaAdapter)
                     }
                 }
             }
-        }
-        binding.actVillage.setOnItemClickListener { parent, view, position, id ->
-            villageId=villageList[position].location_id
-        }
-        binding.actDistrict.setOnFocusChangeListener { abaad, asd ->
-            binding.actDistrict.showDropDown()
-        }
-        binding.actDistrict.setOnClickListener {
-            binding.actDistrict.showDropDown()
-        }
-        binding.actTaluka.setOnFocusChangeListener { abaad, asd ->
-            binding.actTaluka.showDropDown()
-        }
-        binding.actTaluka.setOnClickListener {
-            binding.actTaluka.showDropDown()
-        }
-
-        binding.etAadharCard.addTextChangedListener(object :TextWatcher{
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-                if(s?.length==12){
-
-                   CoroutineScope(Dispatchers.IO).launch {
-                       checkIfAadharCardExists(s.toString())
-                   }
-
+            binding.actTaluka.setOnItemClickListener { parent, view, position, id ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    talukaId=talukaList[position].location_id
+                    villageNames.clear();
+                    binding.actVillage.setText("")
+                    villageList=areaDao.getVillageByTaluka(talukaList[position].location_id)
+                    for (village in villageList){
+                        villageNames.add(village.name)
+                    }
+                    val villageAdapter = ArrayAdapter(
+                        this@RegistrationActivity, android.R.layout.simple_list_item_1, villageNames
+                    )
+                    Log.d("mytag",""+villageNames.size)
+                    withContext(Dispatchers.Main){
+                        binding.actVillage.setAdapter(villageAdapter)
+                        binding.actVillage.setOnFocusChangeListener { abaad, asd ->
+                            binding.actVillage.showDropDown()
+                        }
+                        binding.actVillage.setOnClickListener {
+                            binding.actVillage.showDropDown()
+                        }
+                    }
                 }
             }
-        })
+            binding.actVillage.setOnItemClickListener { parent, view, position, id ->
+                villageId=villageList[position].location_id
+            }
+            binding.actDistrict.setOnFocusChangeListener { abaad, asd ->
+                binding.actDistrict.showDropDown()
+            }
+            binding.actDistrict.setOnClickListener {
+                binding.actDistrict.showDropDown()
+            }
+            binding.actTaluka.setOnFocusChangeListener { abaad, asd ->
+                binding.actTaluka.showDropDown()
+            }
+            binding.actTaluka.setOnClickListener {
+                binding.actTaluka.showDropDown()
+            }
+
+            binding.etAadharCard.addTextChangedListener(object :TextWatcher{
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+                }
+
+                override fun afterTextChanged(s: Editable?) {
+                    if(s?.length==12){
+
+                       CoroutineScope(Dispatchers.IO).launch {
+                           checkIfAadharCardExists(s.toString())
+                       }
+
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            Log.d("mytag","MainActivity ${e.message}",e)
+        }
 
     }
     private fun getAddressFromLatLong():String{
@@ -714,7 +556,6 @@ class RegistrationActivity : AppCompatActivity() {
                 resources.getString(R.string.enter_aadhar_card_number)
             validationResults.add(false)
         }
-
         if (aadharIdImagePath.toString().length > 0 &&  aadharCardFile.length()>0) {
             validationResults.add(true)
             Log.d("mytag","aadharIdImagePath => true")
@@ -742,6 +583,10 @@ class RegistrationActivity : AppCompatActivity() {
         } else {
             validationResults.add(false)
             Log.d("mytag","tabletImeiPhotoPath => false")
+        }
+        if(binding.etLocation.text.toString().length<1){
+
+            getTheLocation()
         }
 
         return !validationResults.contains(false)
@@ -807,74 +652,6 @@ class RegistrationActivity : AppCompatActivity() {
                     }
                 }
         } catch (e: Exception) {
-        }
-    }
-    private fun captureImage(requestCode: Int) {
-        try {
-            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val fileName = "image_$timestamp"
-            val mediaStorageDir = File(externalMediaDirs[0], "myfiles")
-            val uriFolder = Uri.parse(mediaStorageDir.absolutePath)
-            val myAppFolder = File(uriFolder.toString())
-
-            // Create the folder if it doesn't exist
-            if (!myAppFolder.exists()) {
-                myAppFolder.mkdirs()
-            }
-
-            // Create the file for the image
-            val outputFile = File.createTempFile(fileName, ".jpg", myAppFolder)
-            val uri = FileProvider.getUriForFile(this, "com.sipl.egstabdistribution.provider", outputFile)
-
-            // Store the URI in the map with the corresponding request code
-            uriMap[requestCode] = uri
-
-            // Launch the camera to capture the image
-            cameraLauncher.launch(uri)
-        } catch (e: Exception) {
-            Log.d("mytag","captureImage=>Exception=>"+e.message)
-            e.printStackTrace()
-        }
-    }
-    suspend fun uriToFile(context: Context, uri: String): File? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val requestOptions = RequestOptions()
-                    .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC) // Don't cache to avoid reading from cache
-                    .skipMemoryCache(false) // Skip memory cache
-                val bitmap = Glide.with(context)
-                    .asBitmap()
-                    .load(uri)
-                    .apply(requestOptions)
-                    .submit()
-                    .get()
-                val time= Calendar.getInstance().timeInMillis.toString()
-                // Create a temporary file to store the bitmap
-                val file = File(context.cacheDir, "$time.jpg")
-                val outputStream = FileOutputStream(file)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 10, outputStream)
-                outputStream.flush()
-                outputStream.close()
-
-                file // Return the temporary file
-            } catch (e: Exception) {
-                Log.d("mytag", "Exception uriToFile: ${e.message}")
-                null // Return null if there's an error
-            }
-        }
-    }
-    private suspend fun createFilePart(fileInfo: FileInfo): MultipartBody.Part? {
-        try {
-            Log.d("mytag",""+fileInfo.fileUri)
-            val file: File? = uriToFile(applicationContext, fileInfo.fileUri)
-            return file?.let {
-                val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), it)
-                MultipartBody.Part.createFormData(fileInfo.fileName, it.name, requestFile)
-            }
-        } catch (e: Exception) {
-            Log.d("mytag", "Exception createFilePart: ${e.message}")
-            e.printStackTrace()
-           return null
         }
     }
     private suspend fun createFilePartByFile(file: File,fileName:String): MultipartBody.Part? {
@@ -974,35 +751,6 @@ class RegistrationActivity : AppCompatActivity() {
             Log.d("mytag", "Failed to delete file: ")
         }
     }
-    private fun deleteFileFromUri(uri: Uri) {
-        val contentResolver: ContentResolver = applicationContext.contentResolver
-        val projection = arrayOf(MediaStore.MediaColumns.DATA)
-        var filePath: String? = null
-
-        // Query the file path from the MediaStore
-        contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
-            val columnIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
-            cursor.moveToFirst()
-            filePath = cursor.getString(columnIndex)
-        }
-
-        filePath?.let { path ->
-            // Delete the file
-            val fileToDelete = File(path)
-            if (fileToDelete.exists()) {
-                if (fileToDelete.delete()) {
-                    // File deleted successfully
-                    Toast.makeText(this, "File deleted", Toast.LENGTH_SHORT).show()
-                } else {
-                    // Failed to delete the file
-                    Toast.makeText(this, "Failed to delete the file", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                // File doesn't exist
-                Toast.makeText(this, "File doesn't exist", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
@@ -1084,5 +832,103 @@ class RegistrationActivity : AppCompatActivity() {
             tempFile // Return the temporary file (or null if an error occurred)
         }
 
+    fun startCameraActivity(requestCode: Int) {
+        val intent = Intent(this, CameraActivity::class.java)
+        intent.putExtra("requestCode", requestCode)
+        startForResult.launch(intent)
+    }
 
+    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val requestCode = result.data?.getIntExtra("requestCode", -1)
+        if (result.resultCode == Activity.RESULT_OK) {
+            val capturedImageUri = result.data?.getParcelableExtra<Uri>("capturedImageUri")
+            val requestCode = result.data?.getIntExtra("requestCode", -1)
+            if (capturedImageUri != null && requestCode != -1) {
+                // Image captured successfully, do something with the URI
+
+                when (requestCode) {
+                    REQUEST_CODE_PHOTO -> {
+                        Glide.with(this@RegistrationActivity).load(capturedImageUri).
+                        override(150,120).into(binding.ivPhoto)
+                        photoImagePath= capturedImageUri.toString()
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            runOnUiThread {  dialog.show() }
+                            val beneficiaryPhotoJob=async { beneficiaryPhotoFile=uriStringToTempFile(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            beneficiaryPhotoJob.await()
+                            withContext(Dispatchers.Main){
+                                dialog.dismiss()
+                            }
+0
+                        }
+
+                    }
+                    REQUEST_CODE_TABLET_IMEI -> {
+                        Glide.with(this@RegistrationActivity).load(capturedImageUri).
+                        override(150,120).into(binding.ivTabletImei)
+                        tabletImeiPhotoPath= capturedImageUri.toString()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            runOnUiThread {  dialog.show() }
+                            val imeiPhotoJob= async {
+                                imeiPhotoFile=uriStringToTempFile(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            imeiPhotoJob.await()
+                            withContext(Dispatchers.Main){
+                                if(imeiPhotoFile.length()>0){
+                                    Log.d("mytag",imeiPhotoFile.length().toString())
+                                    dialog.dismiss()
+                                }
+
+                            }
+                        }
+
+                    }
+                    REQUEST_CODE_AADHAR_CARD -> {
+                        Glide.with(this@RegistrationActivity).load(capturedImageUri).
+                        override(150,120).into(binding.ivAadhar)
+                        aadharIdImagePath= capturedImageUri.toString()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            runOnUiThread {  dialog.show() }
+                            val aadharCardPhotoJob=async { aadharCardFile=uriStringToTempFile(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            aadharCardPhotoJob.await()
+                            withContext(Dispatchers.Main){
+                                dialog.dismiss()
+                            }
+
+                        }
+                    }
+                    REQUEST_CODE_GRAMSEVAK -> {
+                        Glide.with(this@RegistrationActivity).load(capturedImageUri).
+                        override(150,120).into(binding.ivGramsevakId)
+                        gramsevakIdImagePath= capturedImageUri.toString()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            runOnUiThread {  dialog.show() }
+                            val gramsevakPhotoJob=async { gramsevakIdPhotoFile=uriStringToTempFile(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            gramsevakPhotoJob.await()
+                            try {
+                                getAddressFromLatLong()
+                            } finally {
+
+                            }
+                            withContext(Dispatchers.Main){
+                                dialog.dismiss()
+                            }
+
+                        }
+                    }
+                    else -> {
+                        Toast.makeText(this@RegistrationActivity,resources.getString(R.string.unknown_request_code),Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+            } else {
+
+                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.image_capture_failed),Toast.LENGTH_SHORT).show()
+            }
+        } else if (requestCode == Activity.RESULT_CANCELED) {
+            val requestCode = result.data?.getIntExtra("requestCode", -1)
+            if (requestCode != -1) {
+               Toast.makeText(this@RegistrationActivity,resources.getString(R.string.image_capture_failed),Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }

@@ -166,7 +166,17 @@ class MainActivity : AppCompatActivity(),
                             }
                         }else{
 
-                           runOnUiThread {  binding.tvNoRecords.visibility=View.VISIBLE }
+
+                           runOnUiThread {
+
+                               tabUserList.clear()
+                               adapter.notifyDataSetChanged()
+                               binding.tvNoRecords.visibility=View.VISIBLE
+                               paginationAdapter= MyPageNumberAdapter(0,"0",this@MainActivity)
+                               binding.recyclerViewPageNumbers.adapter=paginationAdapter
+                               paginationAdapter.notifyDataSetChanged()
+
+                           }
                         }
 
                     }else{

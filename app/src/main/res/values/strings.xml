@@ -52,4 +52,6 @@
     <string name="please_check_internet_connection">Please check internet connection</string>
     <string name="plese_enter_valid_credentials">Please enter valid credentials</string>
     <string name="submit">Submit</string>
+    <string name="image_capture_failed">Image Capture Failed Try Again</string>
+    <string name="unknown_request_code">Unknown Request Code</string>
 </resources>
