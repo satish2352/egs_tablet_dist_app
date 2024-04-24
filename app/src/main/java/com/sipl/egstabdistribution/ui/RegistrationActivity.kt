@@ -236,8 +236,17 @@ class RegistrationActivity : AppCompatActivity() {
                 val xAddress = 50f // Adjust the x-coordinate as needed
                 val yAddress = bitmap.height.toFloat() - 100f
                 canvas.drawText(text, x, y, paint)
-                canvas.drawText(addressText, xAddress, yAddress, paint)
-                canvas.drawText(formattedDateTime, xAddress, yAddress - 50, paint)
+                val addressTextWidth = paint.measureText(addressText)
+                val availableWidth = bitmap.width.toFloat() - xAddress // A
+                if(addressTextWidth > availableWidth){
+                    val (firstHalf, secondHalf) = splitStringByHalf(addressText)
+                    canvas.drawText(firstHalf, xAddress, yAddress-50, paint)
+                    canvas.drawText(secondHalf, xAddress, yAddress, paint)
+                    canvas.drawText(formattedDateTime, xAddress, yAddress-100, paint)
+                }else{
+                    canvas.drawText(addressText, xAddress, yAddress, paint)
+                    canvas.drawText(formattedDateTime, xAddress, yAddress-50, paint)
+                }
 
                 // Save the modified bitmap to a temporary file
                 val tempFile = File.createTempFile("temp_image", ".jpg", context.cacheDir)
@@ -254,6 +263,13 @@ class RegistrationActivity : AppCompatActivity() {
                 tempEmptyFile
             }
         }
+    }
+    fun splitStringByHalf(input: String): Pair<String, String> {
+        val length = input.length
+        val halfLength = length / 2
+        val firstHalf = input.substring(0, halfLength)
+        val secondHalf = input.substring(halfLength)
+        return Pair(firstHalf, secondHalf)
     }
     override fun onResume() {
         super.onResume()

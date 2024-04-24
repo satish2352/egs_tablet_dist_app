@@ -18,13 +18,25 @@
 
     <ImageView
         android:focusableInTouchMode="false"
-        android:scaleType="fitXY"
+        android:scaleType="fitCenter"
         android:clickable="false"
         android:id="@+id/ivPreview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:visibility="gone" />
+
+    <ImageView
+        android:layout_marginTop="8dp"
+        android:background="@drawable/round_circle_white"
+        android:src="@drawable/ic_toggle_camera"
+        android:id="@+id/btnToggleCamera"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:text="Capture"
+        app:tint="@color/appBlue" />
 
     <ImageView
         android:background="@drawable/round_circle_white"
@@ -47,7 +59,7 @@
         android:layout_height="55dp"
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="89dp"
-        android:layout_marginBottom="17dp"
+        android:layout_marginBottom="16dp"
         android:layout_toStartOf="@id/btnCapture"
         android:src="@drawable/ic_retake"
         android:text="Retake"
@@ -63,7 +75,7 @@
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:text="Cancel" />
 
@@ -76,7 +88,7 @@
         android:layout_height="55dp"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="89dp"
-        android:layout_marginBottom="19dp"
+        android:layout_marginBottom="16dp"
         android:layout_toEndOf="@id/btnCapture"
         android:src="@drawable/ic_select"
         android:text="Okay" />
@@ -95,5 +107,12 @@
         android:layout_alignParentStart="true"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="16dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:visibility="invisible"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"></ProgressBar>
 
 </RelativeLayout>
