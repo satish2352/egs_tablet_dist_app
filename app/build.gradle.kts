@@ -20,7 +20,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 
-
+        kapt {
+            arguments {
+                arg("room.schemaLocation", "$projectDir/schemas")
+            }
+        }
     }
 
     buildTypes {
@@ -97,6 +101,11 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.2")
     // Add the CameraX dependencies
     implementation ("androidx.camera:camera-camera2:1.3.2")
+
+    //FOR IMAGE COMPRESSION
+    implementation ("id.zelory:compressor:3.0.1")
+
+
 
 
 }

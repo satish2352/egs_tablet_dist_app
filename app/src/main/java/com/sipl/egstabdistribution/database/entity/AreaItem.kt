@@ -1,4 +1,4 @@
-package com.sipl.egstabdistribution.database
+package com.sipl.egstabdistribution.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

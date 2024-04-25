@@ -1,4 +1,4 @@
-package com.sipl.egstabdistribution.ui
+package com.sipl.egstabdistribution.ui.activities
 
 import android.app.Dialog
 import android.graphics.Color

@@ -54,4 +54,13 @@
     <string name="submit">Submit</string>
     <string name="image_capture_failed">Image Capture Failed Try Again</string>
     <string name="unknown_request_code">Unknown Request Code</string>
+    <string name="user_added_successfully">User Addded Successfully</string>
+    <string name="user_not_added_please_try_again">User not added please try again</string>
+    <string name="registration_saved_offline">Registrations Saved Offline</string>
+    <string name="entries_to_sync">Entries To Sync</string>
+    <string name="user_list">Added Beneficiary List</string>
+    <string name="internet_is_not_available_please_check">Check Internet Connection</string>
+    <string name="sync_user_data">Sync Beneficiary</string>
+    <string name="sync">Sync</string>
+    <string name="beneficiary_upload_failed">Beneficiary Upload Failed</string>
 </resources>

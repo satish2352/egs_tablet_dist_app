@@ -1,4 +1,4 @@
-package com.sipl.egstabdistribution.database
+package com.sipl.egstabdistribution.database.dao
 
 import android.util.Log
 import androidx.room.Dao
@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.sipl.egstabdistribution.database.entity.AreaItem
 
 @Dao
 interface AreaDao {

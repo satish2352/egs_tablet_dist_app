@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/appBlue"
-    tools:context="com.sipl.egstabdistribution.ui.LoginActivity">
+    tools:context="com.sipl.egstabdistribution.ui.start.LoginActivity">
 
     <TextView
         android:layout_width="wrap_content"

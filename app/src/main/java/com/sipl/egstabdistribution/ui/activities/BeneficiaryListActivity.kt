@@ -1,4 +1,4 @@
-package com.sipl.egstabdistribution
+package com.sipl.egstabdistribution.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -14,13 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
 import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
+import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.adapter.MyPageNumberAdapter
 import com.sipl.egstabdistribution.adapter.TabDistributionListAdapter
 import com.sipl.egstabdistribution.databinding.ActivityMainBinding
 import com.sipl.egstabdistribution.model.TabDistList.TabUser
-import com.sipl.egstabdistribution.ui.BeneficiaryDetailsActivity
-import com.sipl.egstabdistribution.ui.LoginActivity
-import com.sipl.egstabdistribution.ui.RegistrationActivity
+import com.sipl.egstabdistribution.ui.start.LoginActivity
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
 import com.sipl.egstabdistribution.utils.MySharedPref
 import com.sipl.egstabdistribution.webservice.ApiClient
@@ -33,7 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class MainActivity : AppCompatActivity(),
+class BeneficiaryListActivity : AppCompatActivity(),
     MyPageNumberAdapter.OnPageNumberClickListener,TabDistributionListAdapter.OnBeneficiaryClickListener {
     lateinit var binding: ActivityMainBinding
     private lateinit var dialog: CustomProgressDialog
@@ -48,6 +47,7 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         binding= ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title=resources.getString(R.string.beneficiary_list)
         dialog= CustomProgressDialog(this)
         apiService= ApiClient.create(this)
@@ -84,10 +84,10 @@ class MainActivity : AppCompatActivity(),
 
         binding.floatingActionButton.setOnClickListener {
             if(isInternetAvailable){
-                val intent=Intent(this,RegistrationActivity::class.java)
+                val intent=Intent(this, RegistrationActivity::class.java)
                 startActivity(intent)
             }else{
-                Toast.makeText(this@MainActivity,
+                Toast.makeText(this@BeneficiaryListActivity,
                     getString(R.string.please_check_internet_connection),Toast.LENGTH_LONG).show()
             }
         }
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity(),
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
 
-                val builder = AlertDialog.Builder(this@MainActivity)
+                val builder = AlertDialog.Builder(this@BeneficiaryListActivity)
                 builder.setTitle(getString(R.string.exit))
                     .setMessage(getString(R.string.are_you_sure_you_want_to_exit_app))
                     .setPositiveButton(getString(R.string.yes)) { _, _ ->
@@ -147,12 +147,12 @@ class MainActivity : AppCompatActivity(),
                             withContext(Dispatchers.Main){
                                 binding.tvNoRecords.visibility=View.GONE
                                 tabUserList= response.body()?.data?.toMutableList()!!
-                                adapter= TabDistributionListAdapter(tabUserList,Integer.parseInt(response.body()?.page_no_to_hilight),pageSize,this@MainActivity)
+                                adapter= TabDistributionListAdapter(tabUserList,Integer.parseInt(response.body()?.page_no_to_hilight),pageSize,this@BeneficiaryListActivity)
                                 Log.d("mytag",""+tabUserList.size)
                                 Log.d("mytag",""+response.body()?.status)
                                 binding.recyclerView.adapter=adapter
                                 adapter.notifyDataSetChanged()
-                                val pageAdapter=MyPageNumberAdapter(response.body()?.totalPages!!,response.body()?.page_no_to_hilight.toString(),this@MainActivity)
+                                val pageAdapter=MyPageNumberAdapter(response.body()?.totalPages!!,response.body()?.page_no_to_hilight.toString(),this@BeneficiaryListActivity)
                                 if(binding.recyclerView.computeHorizontalScrollRange()>binding.recyclerView.width)
                                 {
                                     binding.layoutIconScroll.iVScrollableIcon.visibility = View.VISIBLE
@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity(),
                                 }
                                 binding.recyclerViewPageNumbers.adapter=pageAdapter
                                 pageAdapter.notifyDataSetChanged()
-                                Toast.makeText(this@MainActivity,response.body()?.message,
+                                Toast.makeText(this@BeneficiaryListActivity,response.body()?.message,
                                     Toast.LENGTH_SHORT).show()
                             }
                         }else{
@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity(),
                                tabUserList.clear()
                                adapter.notifyDataSetChanged()
                                binding.tvNoRecords.visibility=View.VISIBLE
-                               paginationAdapter= MyPageNumberAdapter(0,"0",this@MainActivity)
+                               paginationAdapter= MyPageNumberAdapter(0,"0",this@BeneficiaryListActivity)
                                binding.recyclerViewPageNumbers.adapter=paginationAdapter
                                paginationAdapter.notifyDataSetChanged()
 
@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity(),
 
                     }else{
                         withContext(Dispatchers.Main){
-                            Toast.makeText(this@MainActivity,resources.getString(R.string.response_unsuccessfull),
+                            Toast.makeText(this@BeneficiaryListActivity,resources.getString(R.string.response_unsuccessfull),
                                 Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -191,7 +191,7 @@ class MainActivity : AppCompatActivity(),
                 }else{
 
                     withContext(Dispatchers.Main){
-                        Toast.makeText(this@MainActivity,resources.getString(R.string.response_unsuccessfull),
+                        Toast.makeText(this@BeneficiaryListActivity,resources.getString(R.string.response_unsuccessfull),
                             Toast.LENGTH_SHORT).show()
 
                     }
@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity(),
             } catch (e: Exception) {
                 runOnUiThread { dialog.dismiss() }
                 withContext(Dispatchers.Main){
-                    Toast.makeText(this@MainActivity,resources.getString(R.string.response_failed),
+                    Toast.makeText(this@BeneficiaryListActivity,resources.getString(R.string.response_failed),
                         Toast.LENGTH_SHORT).show()
                     runOnUiThread {  binding.tvNoRecords.visibility=View.VISIBLE }
                 }
@@ -218,20 +218,20 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu,menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(item.itemId==R.id.action_logout){
+        if(item.itemId== R.id.action_logout){
             AlertDialog.Builder(this)
                 .setMessage("Are you sure you want to logout ?")
                 .setPositiveButton("Yes") { dialog, _ ->
                     // Open the location settings to enable GPS
-                    val mySharedPref= MySharedPref(this@MainActivity)
+                    val mySharedPref= MySharedPref(this@BeneficiaryListActivity)
                     mySharedPref.clearAll()
-                    val intent= Intent(this@MainActivity, LoginActivity::class.java)
+                    val intent= Intent(this@BeneficiaryListActivity, LoginActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(intent)
                     dialog.dismiss()
@@ -244,20 +244,26 @@ class MainActivity : AppCompatActivity(),
 
         }
         return super.onOptionsItemSelected(item)
-    }
+    }*/
 
     override fun onClick(user: TabUser) {
 
         if(isInternetAvailable){
-            val intent= Intent(this@MainActivity, BeneficiaryDetailsActivity::class.java)
+            val intent= Intent(this@BeneficiaryListActivity, BeneficiaryDetailsActivity::class.java)
             intent.putExtra("id",user.id.toString())
             Log.d("mytag",user.id.toString())
             startActivity(intent)
         }else{
 
-            Toast.makeText(this@MainActivity,
+            Toast.makeText(this@BeneficiaryListActivity,
                 getString(R.string.please_check_internet_connection),Toast.LENGTH_LONG).show()
         }
 
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(item.itemId==android.R.id.home){
+            finish()
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

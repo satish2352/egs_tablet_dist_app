@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:clickable="false"
     android:focusableInTouchMode="false"
-    tools:context=".ui.CameraActivity">
+    tools:context=".camera.CameraActivity">
 
 
     <androidx.camera.view.PreviewView

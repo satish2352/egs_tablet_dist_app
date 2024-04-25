@@ -24,19 +24,28 @@
         android:theme="@style/Theme.EGSRegistration"
         tools:targetApi="31">
         <activity
-            android:name=".ui.CameraActivity"
+            android:name=".ui.activities.OfflineBeneficiaryDetailsActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.BeneficiaryDetailsActivity"
+            android:name=".ui.activities.HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.RegistrationActivity"
+            android:name=".ui.activities.SyncUserActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.LoginActivity"
+            android:name=".camera.CameraActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.SplashActivity"
+            android:name=".ui.activities.BeneficiaryDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.RegistrationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.start.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.start.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,7 +54,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.activities.BeneficiaryListActivity"
             android:exported="true" />
 
         <provider

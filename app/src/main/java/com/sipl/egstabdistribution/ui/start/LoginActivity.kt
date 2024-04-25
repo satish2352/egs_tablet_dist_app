@@ -1,4 +1,4 @@
-package com.sipl.egstabdistribution.ui
+package com.sipl.egstabdistribution.ui.start
 
 import android.Manifest
 import android.content.Context
@@ -14,11 +14,12 @@ import androidx.core.content.ContextCompat
 import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
 import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
 import com.permissionx.guolindev.PermissionX
-import com.sipl.egstabdistribution.MainActivity
+import com.sipl.egstabdistribution.ui.activities.BeneficiaryListActivity
 import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.database.AppDatabase
 import com.sipl.egstabdistribution.databinding.ActivityLoginBinding
 import com.sipl.egstabdistribution.model.LoginModel
+import com.sipl.egstabdistribution.ui.activities.HomeActivity
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
 import com.sipl.egstabdistribution.utils.MySharedPref
 import com.sipl.egstabdistribution.utils.MyValidator
@@ -108,7 +109,7 @@ class LoginActivity : AppCompatActivity() {
                                             )
                                             toast.show()
                                             val intent =
-                                                Intent(this@LoginActivity, MainActivity::class.java)
+                                                Intent(this@LoginActivity,HomeActivity::class.java)
                                             intent.flags =
                                                 Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                                             startActivity(intent)

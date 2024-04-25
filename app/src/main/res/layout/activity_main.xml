@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.sipl.egstabdistribution.MainActivity">
+    tools:context="com.sipl.egstabdistribution.ui.activities.BeneficiaryListActivity">
 
     <TextView
         android:layout_marginTop="10dp"
@@ -44,9 +44,10 @@
                android:id="@+id/recyclerViewPageNumbers"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"></androidx.recyclerview.widget.RecyclerView>
-           <include layout="@layout/layout_scrollable_icon" android:id="@+id/layoutIconScroll"/>
+           <include layout="@layout/layout_scrollable_icon"  android:visibility="gone" android:id="@+id/layoutIconScroll"/>
            <com.google.android.material.floatingactionbutton.FloatingActionButton
                android:layout_gravity="center"
+               android:visibility="gone"
                android:id="@+id/floatingActionButton"
                android:layout_width="wrap_content"
                android:layout_height="wrap_content"

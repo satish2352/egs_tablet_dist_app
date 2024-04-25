@@ -1,4 +1,4 @@
-package com.sipl.egstabdistribution.ui
+package com.sipl.egstabdistribution.ui.start
 
 import android.content.Context
 import android.content.Intent
@@ -10,13 +10,14 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.gson.Gson
-import com.sipl.egstabdistribution.MainActivity
+import com.sipl.egstabdistribution.ui.activities.BeneficiaryListActivity
 import com.sipl.egstabdistribution.database.AppDatabase
-import com.sipl.egstabdistribution.database.AreaDao
-import com.sipl.egstabdistribution.database.AreaItem
+import com.sipl.egstabdistribution.database.dao.AreaDao
+import com.sipl.egstabdistribution.database.entity.AreaItem
 import com.sipl.egstabdistribution.databinding.ActivitySplashBinding
 import com.sipl.egstabdistribution.model.areamaster.AreaUpdateData
 import com.sipl.egstabdistribution.model.areamaster.MasterUpdateModel
+import com.sipl.egstabdistribution.ui.activities.HomeActivity
 import com.sipl.egstabdistribution.utils.MySharedPref
 import com.sipl.egstabdistribution.webservice.ApiClient
 import kotlinx.coroutines.CoroutineScope
@@ -74,7 +75,7 @@ class SplashActivity : AppCompatActivity() {
                 val mySharedPref=MySharedPref(this@SplashActivity)
                 if(mySharedPref.getIsLoggedIn()){
                     binding.progressBar.visibility = View.GONE
-                    val intent= Intent(this@SplashActivity, MainActivity::class.java)
+                    val intent= Intent(this@SplashActivity, HomeActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(intent)
                     finish()

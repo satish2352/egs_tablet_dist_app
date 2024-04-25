@@ -1,9 +1,8 @@
-package com.sipl.egstabdistribution.ui
+package com.sipl.egstabdistribution.camera
 
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -18,7 +17,6 @@ import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.databinding.ActivityCameraBinding
 import java.io.File

@@ -1,4 +1,4 @@
-package com.sipl.egstabdistribution.ui
+package com.sipl.egstabdistribution.ui.activities
 
 import android.Manifest
 import android.app.Activity
@@ -22,7 +22,6 @@ import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -36,28 +35,40 @@ import com.google.android.gms.maps.model.LatLng
 import com.permissionx.guolindev.PermissionX
 import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.database.AppDatabase
-import com.sipl.egstabdistribution.database.AreaDao
-import com.sipl.egstabdistribution.database.AreaItem
+import com.sipl.egstabdistribution.database.dao.AreaDao
+import com.sipl.egstabdistribution.database.entity.AreaItem
 import com.sipl.egstabdistribution.databinding.ActivityRegistrationBinding
+import com.sipl.egstabdistribution.camera.CameraActivity
+import com.sipl.egstabdistribution.database.dao.UserDao
+import com.sipl.egstabdistribution.database.entity.User
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
 import com.sipl.egstabdistribution.utils.MyValidator
 import com.sipl.egstabdistribution.webservice.ApiClient
+import id.zelory.compressor.Compressor
+import id.zelory.compressor.constraint.format
+import id.zelory.compressor.constraint.quality
+import id.zelory.compressor.constraint.resolution
+import id.zelory.compressor.constraint.size
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.coroutines.resume
 
 class RegistrationActivity : AppCompatActivity() {
     private  var isInternetAvailable=false
@@ -66,6 +77,7 @@ class RegistrationActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var appDatabase: AppDatabase
     private lateinit var areaDao: AreaDao
+    private lateinit var userDao: UserDao
     private lateinit var districtList:List<AreaItem>
     private lateinit var villageList:List<AreaItem>
     private lateinit var talukaList:List<AreaItem>
@@ -112,6 +124,7 @@ class RegistrationActivity : AppCompatActivity() {
         supportActionBar?.title=resources.getString(R.string.beneficiary_registration)
         appDatabase=AppDatabase.getDatabase(this)
         areaDao=appDatabase.areaDao()
+        userDao=appDatabase.userDao()
         val emptyByteArray = ByteArray(0)
         CoroutineScope(Dispatchers.IO).launch {
 
@@ -122,64 +135,44 @@ class RegistrationActivity : AppCompatActivity() {
         }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         binding.btnRegister.setOnClickListener {
-          if(isInternetAvailable){
-              if(validateFieldsX()){
-                  if(isAadharVerified){
-                      if(validateDocuments())
-                      {
-                          CoroutineScope(Dispatchers.Default).launch {
-                              uploadLabourOnline()
-                          }
-                      }else{
-                          Toast.makeText(this@RegistrationActivity,resources.getString(R.string.select_all_documents),Toast.LENGTH_LONG).show()
+          if(validateFieldsX()){
+              if(isInternetAvailable)
+              {
+                  CoroutineScope(Dispatchers.Default).launch {
+                      val aadharCheckJob=async { checkIfAadharCardExists(binding.etAadharCard.text.toString())}
+                      isAadharVerified=aadharCheckJob.await()
+                      if(isAadharVerified){
+                          saveUserDetails()
                       }
-                  }else{
-                     CoroutineScope(Dispatchers.IO).launch {
-                         checkIfAadharCardExists(binding.etAadharCard.text.toString().trim())
-                     }
                   }
-
               }else{
+                  saveUserDetails();
                   Toast.makeText(this@RegistrationActivity,resources.getString(R.string.enter_all_details),Toast.LENGTH_LONG).show()
               }
           }else{
               Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
           }
         }
-
         binding.ivChangeAadhar.setOnClickListener {
-
             if(isInternetAvailable){
                 startCameraActivity(REQUEST_CODE_AADHAR_CARD)
             }else{
                 Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
             }
-
         }
         binding.ivChangePhoto.setOnClickListener {
-            if(isInternetAvailable){
-                startCameraActivity(REQUEST_CODE_PHOTO)
-            }else{
-                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
-            }
 
+                startCameraActivity(REQUEST_CODE_PHOTO)
         }
         binding.ivChangeGramsevakId.setOnClickListener {
 
-            if(isInternetAvailable){
 
                 startCameraActivity(REQUEST_CODE_GRAMSEVAK)
-            }else{
-                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
-            }
+
         }
         binding.ivChangeTabletImei.setOnClickListener {
-            if(isInternetAvailable){
 
                 startCameraActivity(REQUEST_CODE_TABLET_IMEI)
-            }else{
-                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
-            }
         }
         CoroutineScope(Dispatchers.IO).launch {
             val waitingJob=async { districtList=areaDao.getAllDistrict() }
@@ -210,6 +203,58 @@ class RegistrationActivity : AppCompatActivity() {
         })
 
     }
+
+    private fun saveUserDetails() {
+
+        val user=User(
+            fullName = binding.etFullName.text.toString(),
+            district = districtId,
+            taluka = talukaId,
+            village = villageId,
+            mobile = binding.etMobileNumber.text.toString(),
+            aadharCardId = binding.etAadharCard.text.toString(),
+            latitude = latitude.toString(),
+            longitude = longitude.toString(),
+            aadharIdCardPhoto = aadharIdImagePath,
+            gramsevakIdCardPhoto = gramsevakIdImagePath,
+            tabletImeiPhoto = tabletImeiPhotoPath,
+            beneficaryPhoto = photoImagePath,
+            isSynced = false,
+        )
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                var rows: Long=0
+                val waitJob=async { rows=userDao.insertUser(user) }
+                waitJob.await()
+                if(rows>0){
+                    runOnUiThread {
+                        val toast=Toast.makeText(this@RegistrationActivity,
+                            getString(
+                                R.string.user_added_successfully
+                            ),Toast.LENGTH_SHORT)
+                        toast.show()
+                    }
+                    val intent= Intent(this@RegistrationActivity, BeneficiaryListActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    startActivity(intent)
+                }else{
+                    runOnUiThread {
+                        val toast=Toast.makeText(this@RegistrationActivity,
+                            getString(
+                                R.string.user_not_added_please_try_again
+                            ),Toast.LENGTH_SHORT)
+                        toast.show()
+                    }
+                }
+                Log.d("mytag","Rows Inserted : $rows")
+            } catch (e: Exception) {
+                Log.d("mytag","Exception Inserted : ${e.message}")
+                e.printStackTrace()
+            }
+        }
+
+    }
+
     suspend fun uriStringToTempFile(context: Context, uriString: String, text: String, addressText: String): File? {
         return withContext(Dispatchers.IO) {
             try {
@@ -318,25 +363,6 @@ class RegistrationActivity : AppCompatActivity() {
             }
         }
     }
-    private fun checkAndPromptGps() {
-        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            // GPS is not enabled, prompt the user to enable it
-            AlertDialog.Builder(this)
-                .setMessage(" Please enable GPS on your device")
-                .setPositiveButton("Yes") { dialog, _ ->
-                    // Open the location settings to enable GPS
-                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                    dialog.dismiss()
-                }
-                .setNegativeButton("No") { dialog, _ ->
-                    dialog.dismiss()
-                    // Handle the case when the user chooses not to enable GPS
-                }
-                .show()
-        }
-    }
-
     private fun showEnableLocationDialog() {
         val builder = AlertDialog.Builder(this@RegistrationActivity)
         builder.setMessage("Location services are disabled. Do you want to enable them?")
@@ -572,28 +598,28 @@ class RegistrationActivity : AppCompatActivity() {
                 resources.getString(R.string.enter_aadhar_card_number)
             validationResults.add(false)
         }
-        if (aadharIdImagePath.toString().length > 0 &&  aadharCardFile.length()>0) {
+        if (aadharIdImagePath.toString().length > 0) {
             validationResults.add(true)
             Log.d("mytag","aadharIdImagePath => true")
         } else {
             validationResults.add(false)
             Log.d("mytag","aadharIdImagePath => false")
         }
-        if (gramsevakIdImagePath.toString().length > 0 &&   gramsevakIdPhotoFile.length()>0) {
+        if (gramsevakIdImagePath.toString().length > 0) {
             validationResults.add(true)
             Log.d("mytag","gramsevakIdImagePath => true")
         } else {
             validationResults.add(false)
             Log.d("mytag","gramsevakIdImagePath => false")
         }
-        if (photoImagePath.toString().length > 0 &&  beneficiaryPhotoFile.length()>0) {
+        if (photoImagePath.toString().length > 0) {
             validationResults.add(true)
             Log.d("mytag","photoImagePath => true")
         } else {
             validationResults.add(false)
             Log.d("mytag","photoImagePath => false")
         }
-        if (tabletImeiPhotoPath.toString().length > 0 &&  imeiPhotoFile.length()>0) {
+        if (tabletImeiPhotoPath.toString().length > 0) {
             validationResults.add(true)
             Log.d("mytag","tabletImeiPhotoPath => true")
         } else {
@@ -609,22 +635,22 @@ class RegistrationActivity : AppCompatActivity() {
     }
     private fun validateDocuments(): Boolean {
         val validationResults = mutableListOf<Boolean>()
-        if (aadharIdImagePath.toString().length > 0 &&  aadharCardFile.length()>0) {
+        if (aadharIdImagePath.toString().length > 0 ) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
         }
-        if (gramsevakIdImagePath.toString().length > 0 &&   gramsevakIdPhotoFile.length()>0) {
+        if (gramsevakIdImagePath.toString().length > 0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
         }
-        if (photoImagePath.toString().length > 0 &&  beneficiaryPhotoFile.length()>0) {
+        if (photoImagePath.toString().length > 0 ) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
         }
-        if (tabletImeiPhotoPath.toString().length > 0 &&  imeiPhotoFile.length()>0) {
+        if (tabletImeiPhotoPath.toString().length > 0) {
             validationResults.add(true)
         } else {
             validationResults.add(false)
@@ -683,7 +709,7 @@ class RegistrationActivity : AppCompatActivity() {
             return null
         }
     }
-    private suspend fun uploadLabourOnline(){
+    private suspend fun uploadUserOnline(){
         runOnUiThread {
             dialog.show()
         }
@@ -744,7 +770,7 @@ class RegistrationActivity : AppCompatActivity() {
                     Toast.makeText(this@RegistrationActivity,resources.getString(R.string.failed_updating_labour_response),
                         Toast.LENGTH_SHORT).show()
                 }
-                Log.d("mytag","uploadLabourOnline "+e.message)
+                Log.d("mytag","uploadUserOnline "+e.message)
             }
         }
     }
@@ -784,8 +810,9 @@ class RegistrationActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private suspend fun checkIfAadharCardExists(aadharCardNumber:String){
+    private suspend fun checkIfAadharCardExists(aadharCardNumber:String):Boolean{
 
+        return suspendCancellableCoroutine { continuation->
             runOnUiThread {
                 dialog.show()
             }
@@ -796,8 +823,16 @@ class RegistrationActivity : AppCompatActivity() {
                     val response= apiService.checkIfAadharExists(aadharCardNumber)
                     if(response.isSuccessful){
                         runOnUiThread { dialog.dismiss() }
-                        if(response.body()?.status.equals("true"))
+                        if(response.body()?.status.equals("false"))
                         {
+                            continuation.resume(true)
+                            isAadharVerified=true
+                            runOnUiThread { binding.etAadharCard.error=null }
+                            withContext(Dispatchers.Main){
+                            }
+
+                        }else{
+                            continuation.resume(false)
                             runOnUiThread {
                                 binding.etAadharCard.error="Aadhar number already registered with another user"
                             }
@@ -805,13 +840,9 @@ class RegistrationActivity : AppCompatActivity() {
                                 Toast.makeText(this@RegistrationActivity,response.body()?.message,
                                     Toast.LENGTH_SHORT).show()
                             }
-                        }else{
-                            isAadharVerified=true
-                            runOnUiThread { binding.etAadharCard.error=null }
-                            withContext(Dispatchers.Main){
-                            }
                         }
                     }else{
+                        continuation.resume(false)
                         withContext(Dispatchers.Main){
                             dialog.dismiss()
                             Toast.makeText(this@RegistrationActivity,resources.getString(R.string.failed_updating_labour_response),
@@ -820,6 +851,7 @@ class RegistrationActivity : AppCompatActivity() {
                     }
                     //runOnUiThread {dialog.dismiss()  }
                 } catch (e: Exception) {
+                    continuation.resume(false)
                     runOnUiThread { dialog.dismiss() }
                     withContext(Dispatchers.Main){
                         Toast.makeText(this@RegistrationActivity,resources.getString(R.string.response_failed),
@@ -828,6 +860,8 @@ class RegistrationActivity : AppCompatActivity() {
                     Log.d("mytag","checkIfAadharCardExists "+e.message)
                 }
             }
+        }
+
     }
     suspend fun createTempJpgFile(context: Context, byteArray: ByteArray, filename: String): File? =
         withContext(Dispatchers.IO) {
@@ -870,7 +904,7 @@ class RegistrationActivity : AppCompatActivity() {
 
                         CoroutineScope(Dispatchers.IO).launch {
                             runOnUiThread {  dialog.show() }
-                            val beneficiaryPhotoJob=async { beneficiaryPhotoFile=uriStringToTempFile(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            val beneficiaryPhotoJob=async {val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
                             beneficiaryPhotoJob.await()
                             withContext(Dispatchers.Main){
                                 dialog.dismiss()
@@ -886,13 +920,12 @@ class RegistrationActivity : AppCompatActivity() {
                         CoroutineScope(Dispatchers.IO).launch {
                             runOnUiThread {  dialog.show() }
                             val imeiPhotoJob= async {
-                                imeiPhotoFile=uriStringToTempFile(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                                val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
                             imeiPhotoJob.await()
                             withContext(Dispatchers.Main){
-                                if(imeiPhotoFile.length()>0){
-                                    Log.d("mytag",imeiPhotoFile.length().toString())
+
                                     dialog.dismiss()
-                                }
+
 
                             }
                         }
@@ -904,7 +937,7 @@ class RegistrationActivity : AppCompatActivity() {
                         aadharIdImagePath= capturedImageUri.toString()
                         CoroutineScope(Dispatchers.IO).launch {
                             runOnUiThread {  dialog.show() }
-                            val aadharCardPhotoJob=async { aadharCardFile=uriStringToTempFile(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            val aadharCardPhotoJob=async { val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
                             aadharCardPhotoJob.await()
                             withContext(Dispatchers.Main){
                                 dialog.dismiss()
@@ -918,13 +951,8 @@ class RegistrationActivity : AppCompatActivity() {
                         gramsevakIdImagePath= capturedImageUri.toString()
                         CoroutineScope(Dispatchers.IO).launch {
                             runOnUiThread {  dialog.show() }
-                            val gramsevakPhotoJob=async { gramsevakIdPhotoFile=uriStringToTempFile(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            val gramsevakPhotoJob=async { val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
                             gramsevakPhotoJob.await()
-                            try {
-                                getAddressFromLatLong()
-                            } finally {
-
-                            }
                             withContext(Dispatchers.Main){
                                 dialog.dismiss()
                             }
@@ -946,5 +974,107 @@ class RegistrationActivity : AppCompatActivity() {
                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.image_capture_failed),Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    suspend fun uriStringToBitmap(context: Context, uriString: String, latlongtext: String,addressText: String): Uri? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val uri = Uri.parse(uriString)
+                val futureTarget = Glide.with(context)
+                    .asBitmap()
+                    .load(uriString)
+                    .submit()
+                val bitmap = futureTarget.get()
+
+                // Add text overlay to the bitmap
+                val canvas = Canvas(bitmap)
+                val paint = Paint().apply {
+                    color = Color.RED
+                    textSize = 50f // Text size in pixels
+                    isAntiAlias = true
+                    style = Paint.Style.FILL
+                }
+                val currentDateTime = Date()
+                val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                val formattedDateTime = formatter.format(currentDateTime)
+                val x = 50f // Adjust the x-coordinate as needed
+                val y = bitmap.height.toFloat() - 50f // Adjust the y-coordinate as needed
+                val xAddress = 50f // Adjust the x-coordinate as needed
+                val yAddress = bitmap.height.toFloat() - 100f
+                canvas.drawText(latlongtext, x, y, paint)
+                val addressTextWidth = paint.measureText(addressText)
+                val availableWidth = bitmap.width.toFloat() - xAddress // A
+                if(addressTextWidth > availableWidth){
+                    val (firstHalf, secondHalf) = splitStringByHalf(addressText)
+                    canvas.drawText(firstHalf, xAddress, yAddress-50, paint)
+                    canvas.drawText(secondHalf, xAddress, yAddress, paint)
+                    canvas.drawText(formattedDateTime, xAddress, yAddress-100, paint)
+                }else{
+                    canvas.drawText(addressText, xAddress, yAddress, paint)
+                    canvas.drawText(formattedDateTime, xAddress, yAddress-50, paint)
+                }
+
+                // Save the modified bitmap back to the same location
+                saveBitmapToFile(context, bitmap, uri)
+
+                uri // Return the URI of the modified bitmap
+            } catch (e: Exception) {
+                Log.d("mytag","Exception => "+e.message)
+                Log.d("mytag","Exception => ${e.message}",e)
+                e.printStackTrace()
+                null
+            }
+        }
+    }
+    private suspend fun saveBitmapToFile(context: Context, bitmap: Bitmap, uri: Uri) {
+        try {
+            val outputStream = context.contentResolver.openOutputStream(uri)
+            outputStream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 50, it) }
+            outputStream?.flush()
+            outputStream?.close()
+            val imageFile=bitmapToFile(context,bitmap)
+            val compressedImageFile = imageFile?.let {
+                Compressor.compress(context, it) {
+                    format(Bitmap.CompressFormat.JPEG)
+                    resolution(780,1360)
+                    quality(30)
+                    size(400000) // 500 KB
+                }
+            }
+            compressedImageFile?.let { compressedFile:File ->
+                try {
+                    val inputStream = FileInputStream(compressedFile)
+                    val outputStream = context.contentResolver.openOutputStream(uri)
+                    inputStream.use { input ->
+                        outputStream?.use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                } catch (e: IOException) {
+                    // Handle exception
+                    e.printStackTrace()
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.d("mytag","Exception => ${e.message}",e)
+        }
+    }
+    fun bitmapToFile(context: Context, bitmap: Bitmap): File? {
+        // Create a file in the cache directory
+        val time= Calendar.getInstance().timeInMillis.toString()
+        val file = File(context.cacheDir, time)
+
+        try {
+            val fos = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            fos.flush()
+            fos.close()
+            return file
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Log.d("mytag","Exception => ${e.message}",e)
+        }
+        return null
     }
 }

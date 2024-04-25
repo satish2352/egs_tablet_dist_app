@@ -2,7 +2,7 @@ package com.sipl.egstabdistribution.webservice
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.sipl.egstabdistribution.ui.LoginActivity
+import com.sipl.egstabdistribution.ui.start.LoginActivity
 import com.sipl.egstabdistribution.utils.MySharedPref
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
