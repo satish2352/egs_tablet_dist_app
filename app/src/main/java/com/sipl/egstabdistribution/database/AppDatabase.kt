@@ -11,7 +11,7 @@ import com.sipl.egstabdistribution.database.entity.AreaItem
 import com.sipl.egstabdistribution.database.entity.User
 import java.util.concurrent.Executors
 
-@androidx.room.Database(entities = [AreaItem::class,User::class], version = 2,exportSchema = true)
+@androidx.room.Database(entities = [AreaItem::class,User::class], version = 3,exportSchema = true, autoMigrations = [AutoMigration(from = 2, to = 3)])
 abstract class AppDatabase : RoomDatabase() {
     abstract fun areaDao(): AreaDao
     abstract fun userDao(): UserDao

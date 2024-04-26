@@ -11,6 +11,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.location.Address
 import android.location.Geocoder
+import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
@@ -103,6 +105,8 @@ class RegistrationActivity : AppCompatActivity() {
     private lateinit var beneficiaryPhotoFile:File
     private lateinit var imeiPhotoFile:File
     private lateinit var gramsevakIdPhotoFile:File
+
+    private lateinit var locationManager: LocationManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityRegistrationBinding.inflate(layoutInflater)
@@ -134,6 +138,7 @@ class RegistrationActivity : AppCompatActivity() {
             gramsevakIdPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"gramsevakIdPhoto")!!
         }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         binding.btnRegister.setOnClickListener {
           if(validateFieldsX()){
               if(isInternetAvailable)
@@ -202,7 +207,58 @@ class RegistrationActivity : AppCompatActivity() {
             }
         })
 
+        try {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestThePermissions()
+                return
+            }
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                MIN_TIME_BW_UPDATES,
+                MIN_DISTANCE_CHANGE_FOR_UPDATES,
+                locationListener
+            )
+        } catch (e: Exception) {
+
+        }
+
     }
+    private val locationListener: LocationListener = object : LocationListener {
+        override fun onLocationChanged(location: Location) {
+            // Handle location updates here
+            /*val latitude = location.latitude
+            val longitude = location.longitude*/
+            latitude=location.latitude
+            longitude=location.longitude
+
+            Log.d("mytag","$latitude,$longitude")
+            // Do something with latitude and longitude
+            Toast.makeText(
+                applicationContext,
+                "Location: $latitude, $longitude",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+
+        override fun onProviderEnabled(provider: String) {}
+
+        override fun onProviderDisabled(provider: String) {}
+    }
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 100
+        private const val MIN_TIME_BW_UPDATES: Long = 1000 * 60 * 1 // 1 minute
+        private const val MIN_DISTANCE_CHANGE_FOR_UPDATES: Float = 10f // 10 meters
+    }
+
 
     private fun saveUserDetails() {
 
@@ -220,6 +276,7 @@ class RegistrationActivity : AppCompatActivity() {
             tabletImeiPhoto = tabletImeiPhotoPath,
             beneficaryPhoto = photoImagePath,
             isSynced = false,
+            grampanchayatName = binding.etGramPanchayatName.text.toString()
         )
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -234,7 +291,7 @@ class RegistrationActivity : AppCompatActivity() {
                             ),Toast.LENGTH_SHORT)
                         toast.show()
                     }
-                    val intent= Intent(this@RegistrationActivity, BeneficiaryListActivity::class.java)
+                    val intent= Intent(this@RegistrationActivity, HomeActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                 }else{
@@ -1029,7 +1086,7 @@ class RegistrationActivity : AppCompatActivity() {
     private suspend fun saveBitmapToFile(context: Context, bitmap: Bitmap, uri: Uri) {
         try {
             val outputStream = context.contentResolver.openOutputStream(uri)
-            outputStream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 50, it) }
+            outputStream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
             outputStream?.flush()
             outputStream?.close()
             val imageFile=bitmapToFile(context,bitmap)
@@ -1037,8 +1094,8 @@ class RegistrationActivity : AppCompatActivity() {
                 Compressor.compress(context, it) {
                     format(Bitmap.CompressFormat.JPEG)
                     resolution(780,1360)
-                    quality(30)
-                    size(400000) // 500 KB
+                    quality(100)
+                    size(500000) // 500 KB
                 }
             }
             compressedImageFile?.let { compressedFile:File ->

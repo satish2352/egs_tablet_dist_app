@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.database.AppDatabase
@@ -40,6 +41,21 @@ class HomeActivity : AppCompatActivity() {
             val intent=Intent(this,BeneficiaryListActivity::class.java)
             startActivity(intent)
         }
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+
+                val builder = AlertDialog.Builder(this@HomeActivity)
+                builder.setTitle(getString(R.string.exit))
+                    .setMessage(getString(R.string.are_you_sure_you_want_to_exit_app))
+                    .setPositiveButton(getString(R.string.yes)) { _, _ ->
+                        // If "Yes" is clicked, exit the app
+                        finish()
+                    }
+                    .setNegativeButton(getString(R.string.no), null) // If "No" is clicked, do nothing
+                    .show()
+
+            }
+        })
     }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu,menu)

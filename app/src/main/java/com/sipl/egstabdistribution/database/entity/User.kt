@@ -10,6 +10,7 @@ data class User(
     var district: String,
     var taluka: String,
     var village: String,
+    var grampanchayatName: String?=null,
     var mobile: String,
     var aadharCardId: String,
     var latitude: String,

@@ -15,527 +15,576 @@
         android:text="Please check internet connection"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"></TextView>
+
     <ScrollView
         android:id="@+id/layoutMain"
-        android:layout_margin="16dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
         android:orientation="vertical">
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        <TextView
-            android:visibility="gone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
-            android:text="@string/tablet_distribution_information"
-            android:textColor="@color/appBlue"
-            android:textSize="18dp" />
-        <TextView
-            android:layout_marginTop="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
-            android:text="@string/full_name"
-            android:textSize="10dp"
-            android:textColor="@color/appBlue"
-            />
-        <LinearLayout
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <EditText
-                android:id="@+id/etFullName"
-                android:maxLines="1"
-                android:lines="1"
-                android:singleLine="true"
-                android:layout_weight="1"
-                android:paddingLeft="16dp"
-                android:hint="@string/enter_full_name"
-                android:background="@drawable/rounded_background_light_gray"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"></EditText>
-            <ImageView
-                android:clickable="false"
-                android:layout_marginRight="10dp"
-                android:layout_gravity="center"
-                android:src="@drawable/gender"
-                android:layout_width="24dp"
-                android:layout_height="24dp">
-            </ImageView>
-        </LinearLayout>
-        <TextView
-            android:layout_marginTop="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
-            android:text="@string/gram_panchayat_name"
-            android:textSize="10dp"
-            android:textColor="@color/appBlue"
-            />
-        <LinearLayout
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <EditText
-                android:id="@+id/etGramPanchayatName"
-                android:layout_weight="1"
-                android:paddingLeft="16dp"
-                android:hint="@string/grampanchayat_name"
-                android:inputType="text"
-                android:background="@drawable/rounded_background_light_gray"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"></EditText>
-        </LinearLayout>
-
 
         <LinearLayout
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <ImageView
-                android:visibility="gone"
-                android:layout_marginRight="10dp"
-                android:layout_gravity="center"
-                android:src="@drawable/dob"
-                android:layout_width="24dp"
-                android:layout_height="24dp"></ImageView>
-        </LinearLayout>
-        <TextView
-            android:layout_marginTop="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
-            android:text="@string/district"
-            android:textSize="10dp"
-            android:textColor="@color/appBlue"
-            />
-        <LinearLayout
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <AutoCompleteTextView
-                android:id="@+id/actDistrict"
-                android:drawableEnd="@drawable/arrow_dropdown"
-                android:paddingLeft="16dp"
-                android:layout_weight="1"
-                android:hint="@string/district"
-                android:inputType="none"
-                android:background="@drawable/edittext_background"
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"></AutoCompleteTextView>
-        </LinearLayout>
-        <TextView
-            android:layout_marginTop="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
-            android:text="@string/taluka"
-            android:textSize="10dp"
-            android:textColor="@color/appBlue"
-            />
-        <LinearLayout
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <AutoCompleteTextView
-                android:id="@+id/actTaluka"
-                android:drawableEnd="@drawable/arrow_dropdown"
-                android:paddingLeft="16dp"
-                android:layout_weight="1"
-                android:hint="@string/taluka"
-                android:inputType="none"
-                android:background="@drawable/edittext_background"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins"
+                android:text="@string/tablet_distribution_information"
+                android:textColor="@color/appBlue"
+                android:textSize="18dp"
+                android:visibility="gone" />
+            <TextView
+                android:layout_marginTop="16dp"
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"></AutoCompleteTextView>
-        </LinearLayout>
-        <TextView
-            android:layout_marginTop="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
-            android:text="@string/village"
-            android:textSize="10dp"
-            android:textColor="@color/appBlue"
-            />
-        <LinearLayout
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <AutoCompleteTextView
-                android:inputType="none"
-                android:id="@+id/actVillage"
-                android:drawableEnd="@drawable/arrow_dropdown"
-                android:paddingLeft="16dp"
-                android:layout_weight="1"
-                android:hint="@string/village"
-                android:background="@drawable/edittext_background"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"></AutoCompleteTextView>
-        </LinearLayout>
-        <TextView
-            android:layout_marginTop="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
-            android:text="@string/mobile_number"
-            android:textSize="10dp"
-            android:textColor="@color/appBlue"
-            />
-        <LinearLayout
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <EditText
-                android:id="@+id/etMobileNumber"
-                android:lines="1"
-                android:maxLines="1"
-                android:maxLength="10"
-                android:singleLine="true"
-                android:digits="0123456789"
-                android:layout_weight="1"
-                android:paddingLeft="16dp"
-                android:hint="@string/mobile_number"
-                android:inputType="phone"
-                android:background="@drawable/rounded_background_light_gray"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"></EditText>
-            <ImageView
-                android:layout_marginRight="10dp"
-                android:layout_gravity="center"
-                android:src="@drawable/mobile"
-                android:layout_width="24dp"
-                android:layout_height="24dp">
-            </ImageView>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-        <TextView
-            android:layout_marginTop="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
-            android:text="@string/aadhar_card"
-            android:textSize="10dp"
-            android:textColor="@color/appBlue"
-            />
-        <LinearLayout
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <EditText
-                android:id="@+id/etAadharCard"
-                android:layout_weight="1"
-                android:paddingLeft="16dp"
-                android:hint="@string/aadhar_card"
-                android:inputType="number"
-                android:maxLength="12"
-                android:digits="0123456789"
-                android:background="@drawable/rounded_background_light_gray"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"></EditText>
-            <ImageView
-                android:layout_marginRight="10dp"
-                android:layout_gravity="center"
-                android:src="@drawable/idcard"
-                android:layout_width="24dp"
-                android:layout_height="24dp">
-            </ImageView>
-        </LinearLayout>
-        <TextView
-            android:textSize="10dp"
-            android:fontFamily="@font/poppins"
-            android:textColor="@color/appBlue"
-            android:text="@string/location"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"></TextView>
-        <LinearLayout
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_background_light_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <AutoCompleteTextView
-                android:id="@+id/etLocation"
-                android:inputType="none"
-                android:paddingRight="16dp"
-                android:drawableEnd="@drawable/ic_location"
-                android:paddingLeft="16dp"
-                android:layout_weight="1"
-                android:hint="@string/location"
-                android:background="@drawable/edittext_background"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"></AutoCompleteTextView>
-        </LinearLayout>
-        <TextView
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/poppins"
-            android:textColor="@color/appBlue"
-            android:text="@string/add_documents"
-            android:textSize="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"></TextView>
-
-
-        <LinearLayout
-            android:gravity="center"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins"
+                android:text="@string/district"
+                android:textSize="10dp"
+                android:textColor="@color/appBlue"
+                />
             <LinearLayout
                 android:orientation="horizontal"
+                android:background="@drawable/rounded_background_light_gray"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <androidx.cardview.widget.CardView
-                    android:background="@color/white"
-                    app:cardElevation="3dp"
-                    app:cardUseCompatPadding="true"
-                    app:cardPreventCornerOverlap="true"
-                    app:cardCornerRadius="16dp"
+                <AutoCompleteTextView
+                    android:id="@+id/actDistrict"
+                    android:drawableEnd="@drawable/arrow_dropdown"
+                    android:paddingLeft="16dp"
+                    android:layout_weight="1"
+                    android:hint="@string/district"
+                    android:inputType="none"
+                    android:background="@drawable/edittext_background"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-                        android:id="@+id/layoutMgnregaCard"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <ImageView
-                            android:layout_weight="1"
-                            android:scaleType="fitXY"
-                            android:id="@+id/ivPhoto"
-                            android:layout_gravity="center"
-                            android:src="@drawable/document"
-                            android:layout_width="150dp"
-                            android:layout_height="120dp"></ImageView>
-                        <LinearLayout
-                            android:layout_marginLeft="16dp"
-                            android:layout_marginRight="16dp"
-                            android:layout_gravity="center"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_width="150dp"
-                            android:layout_height="wrap_content">
-                            <ImageView
-                                android:id="@+id/ivChangePhoto"
-                                android:layout_gravity="center"
-                                android:padding="8dp"
-                                android:background="@drawable/circle_blue_background"
-                                android:src="@drawable/ic_camera"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"></ImageView>
-                            <TextView
-                                android:layout_marginTop="10dp"
-                                android:layout_gravity="center"
-                                android:text="@string/beneficiary_photo"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"></TextView>
-                        </LinearLayout>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    android:layout_height="48dp"></AutoCompleteTextView>
             </LinearLayout>
-
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            <TextView
+                android:layout_marginTop="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins"
+                android:text="@string/taluka"
+                android:textSize="10dp"
+                android:textColor="@color/appBlue"
+                />
             <LinearLayout
                 android:orientation="horizontal"
+                android:background="@drawable/rounded_background_light_gray"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <androidx.cardview.widget.CardView
-                    android:background="@color/white"
-                    app:cardElevation="3dp"
-                    app:cardUseCompatPadding="true"
-                    app:cardPreventCornerOverlap="true"
-                    app:cardCornerRadius="16dp"
+                <AutoCompleteTextView
+                    android:id="@+id/actTaluka"
+                    android:drawableEnd="@drawable/arrow_dropdown"
+                    android:paddingLeft="16dp"
+                    android:layout_weight="1"
+                    android:hint="@string/taluka"
+                    android:inputType="none"
+                    android:background="@drawable/edittext_background"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <ImageView
-                            android:layout_weight="1"
-                            android:scaleType="fitXY"
-                            android:id="@+id/ivGramsevakId"
-                            android:layout_gravity="center"
-                            android:src="@drawable/document"
-                            android:layout_width="150dp"
-                            android:layout_height="120dp"></ImageView>
-                        <LinearLayout
-                            android:layout_marginLeft="16dp"
-                            android:layout_marginRight="16dp"
-                            android:layout_gravity="center"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_width="150dp"
-                            android:layout_height="wrap_content">
-                            <ImageView
-                                android:id="@+id/ivChangeGramsevakId"
-                                android:layout_gravity="center"
-                                android:padding="8dp"
-                                android:background="@drawable/circle_blue_background"
-                                android:src="@drawable/ic_camera"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"></ImageView>
-                            <TextView
-                                android:layout_marginTop="10dp"
-                                android:layout_gravity="center"
-                                android:text="@string/gramsevak_id_card"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"></TextView>
-                        </LinearLayout>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    android:layout_height="48dp"></AutoCompleteTextView>
             </LinearLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            <TextView
+                android:layout_marginTop="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins"
+                android:text="@string/village"
+                android:textSize="10dp"
+                android:textColor="@color/appBlue"
+                />
             <LinearLayout
                 android:orientation="horizontal"
+                android:background="@drawable/rounded_background_light_gray"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <androidx.cardview.widget.CardView
-                    android:background="@color/white"
-                    app:cardElevation="3dp"
-                    app:cardUseCompatPadding="true"
-                    app:cardPreventCornerOverlap="true"
-                    app:cardCornerRadius="16dp"
+                <AutoCompleteTextView
+                    android:inputType="none"
+                    android:id="@+id/actVillage"
+                    android:drawableEnd="@drawable/arrow_dropdown"
+                    android:paddingLeft="16dp"
+                    android:layout_weight="1"
+                    android:hint="@string/village"
+                    android:background="@drawable/edittext_background"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-                        android:id="@+id/layoutAadharCard"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <ImageView
-                            android:layout_weight="1"
-                            android:scaleType="fitXY"
-                            android:id="@+id/ivAadhar"
-                            android:layout_gravity="center"
-                            android:src="@drawable/document"
-                            android:layout_width="150dp"
-                            android:layout_height="120dp"></ImageView>
-                        <LinearLayout
-                            android:layout_marginLeft="16dp"
-                            android:layout_marginRight="16dp"
-                            android:layout_gravity="center"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_width="150dp"
-                            android:layout_height="wrap_content">
-                            <ImageView
-                                android:id="@+id/ivChangeAadhar"
-                                android:layout_gravity="center"
-                                android:padding="8dp"
-                                android:background="@drawable/circle_blue_background"
-                                android:src="@drawable/ic_camera"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"></ImageView>
-                            <TextView
-                                android:layout_marginTop="10dp"
-                                android:layout_gravity="center"
-                                android:text="@string/aadhar_card"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"></TextView>
-                        </LinearLayout>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    android:layout_height="48dp"></AutoCompleteTextView>
             </LinearLayout>
-
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/poppins"
+                android:text="@string/gram_panchayat_name"
+                android:textColor="@color/appBlue"
+                android:textSize="10dp" />
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <androidx.cardview.widget.CardView
-                    android:background="@color/white"
-                    app:cardElevation="3dp"
-                    app:cardUseCompatPadding="true"
-                    app:cardPreventCornerOverlap="true"
-                    app:cardCornerRadius="16dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/rounded_background_light_gray"
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/etGramPanchayatName"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-                        android:id="@+id/layoutTabletImei"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <ImageView
-                            android:layout_weight="1"
-                            android:scaleType="fitXY"
-                            android:id="@+id/ivTabletImei"
-                            android:layout_gravity="center"
-                            android:src="@drawable/document"
-                            android:layout_width="150dp"
-                            android:layout_height="120dp"></ImageView>
-                        <LinearLayout
-                            android:layout_marginLeft="16dp"
-                            android:layout_marginRight="16dp"
-                            android:layout_gravity="center"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_width="150dp"
-                            android:layout_height="wrap_content">
-                            <ImageView
-                                android:id="@+id/ivChangeTabletImei"
-                                android:layout_gravity="center"
-                                android:padding="8dp"
-                                android:background="@drawable/circle_blue_background"
-                                android:src="@drawable/ic_camera"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"></ImageView>
-                            <TextView
-                                android:layout_marginTop="10dp"
-                                android:layout_gravity="center"
-                                android:text="@string/tablet_imei_photo"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"></TextView>
-                        </LinearLayout>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_background_light_gray"
+                    android:hint="@string/grampanchayat_name"
+                    android:inputType="text"
+                    android:paddingLeft="16dp"></EditText>
             </LinearLayout>
 
-        </LinearLayout>
-        <Button
-            android:layout_marginBottom="36dp"
-            android:id="@+id/btnRegister"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_background"
-            android:text="@string/submit"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"></Button>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/poppins"
+                android:text="@string/full_name"
+                android:textColor="@color/appBlue"
+                android:textSize="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/rounded_background_light_gray"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/etFullName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_background_light_gray"
+                    android:hint="@string/enter_full_name"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:paddingLeft="16dp"
+                    android:singleLine="true"></EditText>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="10dp"
+                    android:clickable="false"
+                    android:src="@drawable/gender"></ImageView>
+            </LinearLayout>
+
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/rounded_background_light_gray"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="10dp"
+                    android:src="@drawable/dob"
+                    android:visibility="gone"></ImageView>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/poppins"
+                android:text="@string/mobile_number"
+                android:textColor="@color/appBlue"
+                android:textSize="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/rounded_background_light_gray"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/etMobileNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_background_light_gray"
+                    android:digits="0123456789"
+                    android:hint="@string/mobile_number"
+                    android:inputType="phone"
+                    android:lines="1"
+                    android:maxLength="10"
+                    android:maxLines="1"
+                    android:paddingLeft="16dp"
+                    android:singleLine="true"></EditText>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="10dp"
+                    android:src="@drawable/mobile"></ImageView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/rounded_background_light_gray"
+                android:orientation="horizontal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/poppins"
+                android:text="@string/aadhar_card"
+                android:textColor="@color/appBlue"
+                android:textSize="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/rounded_background_light_gray"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/etAadharCard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_background_light_gray"
+                    android:digits="0123456789"
+                    android:hint="@string/aadhar_card"
+                    android:inputType="number"
+                    android:maxLength="12"
+                    android:paddingLeft="16dp"></EditText>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="10dp"
+                    android:src="@drawable/idcard"></ImageView>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins"
+                android:text="@string/location"
+                android:textColor="@color/appBlue"
+                android:textSize="10dp"></TextView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_background_light_gray"
+                android:orientation="horizontal">
+
+                <AutoCompleteTextView
+                    android:id="@+id/etLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/edittext_background"
+                    android:drawableEnd="@drawable/ic_location"
+                    android:hint="@string/location"
+                    android:inputType="none"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"></AutoCompleteTextView>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/poppins"
+                android:text="@string/add_documents"
+                android:textColor="@color/appBlue"
+                android:textSize="16dp"></TextView>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/white"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="3dp"
+                        app:cardPreventCornerOverlap="true"
+                        app:cardUseCompatPadding="true">
+
+                        <LinearLayout
+                            android:id="@+id/layoutMgnregaCard"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/ivPhoto"
+                                android:layout_width="150dp"
+                                android:layout_height="120dp"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/document"></ImageView>
+
+                            <LinearLayout
+                                android:layout_width="150dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="16dp"
+                                android:layout_marginRight="16dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:id="@+id/ivChangePhoto"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/circle_blue_background"
+                                    android:padding="8dp"
+                                    android:src="@drawable/ic_camera"></ImageView>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_marginTop="10dp"
+                                    android:text="@string/beneficiary_photo"></TextView>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/white"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="3dp"
+                        app:cardPreventCornerOverlap="true"
+                        app:cardUseCompatPadding="true">
+
+                        <LinearLayout
+
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/ivGramsevakId"
+                                android:layout_width="150dp"
+                                android:layout_height="120dp"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/document"></ImageView>
+
+                            <LinearLayout
+                                android:layout_width="150dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="16dp"
+                                android:layout_marginRight="16dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:id="@+id/ivChangeGramsevakId"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/circle_blue_background"
+                                    android:padding="8dp"
+                                    android:src="@drawable/ic_camera"></ImageView>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_marginTop="10dp"
+                                    android:text="@string/gramsevak_id_card"></TextView>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/white"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="3dp"
+                        app:cardPreventCornerOverlap="true"
+                        app:cardUseCompatPadding="true">
+
+                        <LinearLayout
+                            android:id="@+id/layoutAadharCard"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/ivAadhar"
+                                android:layout_width="150dp"
+                                android:layout_height="120dp"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/document"></ImageView>
+
+                            <LinearLayout
+                                android:layout_width="150dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="16dp"
+                                android:layout_marginRight="16dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:id="@+id/ivChangeAadhar"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/circle_blue_background"
+                                    android:padding="8dp"
+                                    android:src="@drawable/ic_camera"></ImageView>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_marginTop="10dp"
+                                    android:text="@string/aadhar_card"></TextView>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/white"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="3dp"
+                        app:cardPreventCornerOverlap="true"
+                        app:cardUseCompatPadding="true">
+
+                        <LinearLayout
+                            android:id="@+id/layoutTabletImei"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/ivTabletImei"
+                                android:layout_width="150dp"
+                                android:layout_height="120dp"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/document"></ImageView>
+
+                            <LinearLayout
+                                android:layout_width="150dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="16dp"
+                                android:layout_marginRight="16dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:id="@+id/ivChangeTabletImei"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/circle_blue_background"
+                                    android:padding="8dp"
+                                    android:src="@drawable/ic_camera"></ImageView>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_marginTop="10dp"
+                                    android:text="@string/tablet_imei_photo"></TextView>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnRegister"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="36dp"
+                android:background="@drawable/rounded_background"
+                android:text="@string/submit"></Button>
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

@@ -12,16 +12,17 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.sipl.egstabdistribution.R
 import com.sipl.egstabdistribution.database.model.UsersWithAreaNames
+import com.sipl.egstabdistribution.interfaces.OnUserDeleteListener
 import com.sipl.egstabdistribution.ui.activities.OfflineBeneficiaryDetailsActivity
 
-class OfflineUserListAdapter(var list: List<UsersWithAreaNames>) : RecyclerView.Adapter<OfflineUserListAdapter.ViewHolder>() {
+class OfflineUserListAdapter(var list: List<UsersWithAreaNames>,var onUserDeleteListener: OnUserDeleteListener) : RecyclerView.Adapter<OfflineUserListAdapter.ViewHolder>() {
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         val tvFullName=itemView.findViewById<TextView>(R.id.tvFullName)
         val tvAddress=itemView.findViewById<TextView>(R.id.tvAddress)
         val tvMobile=itemView.findViewById<TextView>(R.id.tvMobile)
         val ivPhoto=itemView.findViewById<ImageView>(R.id.ivPhoto)
-        val ivEdit=itemView.findViewById<ImageView>(R.id.ivEdit)
+        val ivDelete=itemView.findViewById<ImageView>(R.id.ivDelete)
         val tvMgnregaId=itemView.findViewById<TextView>(R.id.tvMgnregaId)
         val ivView=itemView.findViewById<ImageView>(R.id.ivView)
         val layoutSyncFailed=itemView.findViewById<LinearLayout>(R.id.layoutSyncFailed)
@@ -52,11 +53,9 @@ class OfflineUserListAdapter(var list: List<UsersWithAreaNames>) : RecyclerView.
             val address="${list[position].districtName} ->${list[position].talukaName} ->${list[position].villageName}"
             holder.tvAddress.text = address
             holder.tvMgnregaId.text= list[position].aadharCardId
-            /*holder.ivEdit.setOnClickListener {
-                val intent= Intent(holder.itemView.context, LabourRegistrationEdit1::class.java)
-                intent.putExtra("id",list[position].id.toString())
-                holder.itemView.context.startActivity(intent)
-            }*/
+            holder.ivDelete.setOnClickListener {
+                onUserDeleteListener.onUserDelete(list[position])
+            }
             holder.ivView.setOnClickListener {
                 val intent= Intent(holder.itemView.context, OfflineBeneficiaryDetailsActivity::class.java)
                 intent.putExtra("id",list[position].id.toString())

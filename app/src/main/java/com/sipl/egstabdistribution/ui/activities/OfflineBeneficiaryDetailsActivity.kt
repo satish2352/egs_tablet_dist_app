@@ -88,12 +88,12 @@ class OfflineBeneficiaryDetailsActivity : AppCompatActivity() {
             loadImageWithRetry(binding.ivGramsevakId,user.gramsevakIdCardPhoto)
             loadImageWithRetry(binding.ivAadhar,user.aadharIdCardPhoto)
             loadImageWithRetry(binding.ivPhoto,user.beneficaryPhoto)
-        /*    if(user.isSyncFailed){
+            if(user.isSyncFailed){
                 binding.layoutSyncFailed.visibility= View.VISIBLE
                 binding.tvFailedReason.text=user.syncFailedReason
             }else{
                 binding.layoutSyncFailed.visibility= View.GONE
-            }*/
+            }
         } catch (e: Exception) {
         }
     }

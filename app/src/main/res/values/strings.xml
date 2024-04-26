@@ -63,4 +63,5 @@
     <string name="sync_user_data">Sync Beneficiary</string>
     <string name="sync">Sync</string>
     <string name="beneficiary_upload_failed">Beneficiary Upload Failed</string>
+    <string name="sync_failed_reason">Reason</string>
 </resources>

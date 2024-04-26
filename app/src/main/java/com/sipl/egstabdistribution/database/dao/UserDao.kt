@@ -17,13 +17,17 @@ interface UserDao {
     suspend fun updateUser(user: User):Int
 
     @Delete
-    suspend fun deleteLabour(user: User)
+    suspend fun deleteUser(user: User)
 
     @Query("SELECT * FROM users WHERE isSynced='0'")
     fun getAllUsers(): List<User>
 
     @Query("SELECT * FROM users WHERE id = :id")
-    suspend fun getLabourById(id: Int): User
+    suspend fun getUserById(id: Int): User
+
+
+    @Query("DELETE FROM users WHERE id = :id")
+    suspend fun deleteUserById(id: Int): Int
 
 
 

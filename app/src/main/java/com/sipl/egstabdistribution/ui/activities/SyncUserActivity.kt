@@ -2,6 +2,7 @@ package com.sipl.egstabdistribution.ui.activities
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.format.Formatter.formatFileSize
@@ -9,6 +10,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -25,6 +27,7 @@ import com.sipl.egstabdistribution.database.entity.User
 import com.sipl.egstabdistribution.database.model.UsersWithAreaNames
 import com.sipl.egstabdistribution.databinding.ActivityHomeBinding
 import com.sipl.egstabdistribution.databinding.ActivitySyncUserBinding
+import com.sipl.egstabdistribution.interfaces.OnUserDeleteListener
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
 import com.sipl.egstabdistribution.utils.NoInternetDialog
 import com.sipl.egstabdistribution.webservice.ApiClient
@@ -42,7 +45,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Calendar
 
-class SyncUserActivity : AppCompatActivity() {
+class SyncUserActivity : AppCompatActivity(),OnUserDeleteListener {
     lateinit var binding:ActivitySyncUserBinding
     private lateinit var database: AppDatabase
     private lateinit var userDao: UserDao
@@ -65,7 +68,7 @@ class SyncUserActivity : AppCompatActivity() {
         database= AppDatabase.getDatabase(this)
         userDao=database.userDao()
         userList=ArrayList<UsersWithAreaNames>()
-        adapter= OfflineUserListAdapter(userList)
+        adapter= OfflineUserListAdapter(userList,this)
         adapter.notifyDataSetChanged()
 
         noInternetDialog= NoInternetDialog(this)
@@ -95,8 +98,6 @@ class SyncUserActivity : AppCompatActivity() {
         }
         if(item.itemId==R.id.navigation_sync){
 
-            //UploadManager.startUploadTask(this@SyncLabourDataActivity)
-            //syncLabourData()
             if(isInternetAvailable){
                 CoroutineScope(Dispatchers.IO).launch {
                    uploadUsersOnline()
@@ -119,65 +120,81 @@ class SyncUserActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.IO).launch {
                 val users = getUsersFromDatabase()
 
-                users.forEach { userRecord ->
-                    try {
-                        val aadharCardImage =
-                            createFilePart(FileInfo(userRecord.aadharIdCardPhoto,"aadhar_image"))
-                        val gramsevakIdImage =
-                            createFilePart(FileInfo(userRecord.gramsevakIdCardPhoto,"gram_sevak_id_card_photo"))
-                        val profileImage =createFilePart(FileInfo(userRecord.beneficaryPhoto,"photo_of_beneficiary"))
-                        val tabletImeiImage =
-                            createFilePart(FileInfo(userRecord.tabletImeiPhoto,"photo_of_tablet_imei"))
-                        val response= apiService.uploadLaborInfo(
-                            fullName = userRecord.fullName,
-                            grampanchayatName = "",
-                            aadharNumber = userRecord.aadharCardId,
-                            districtId=userRecord.district,
-                            talukaId =userRecord.taluka,
-                            villageId = userRecord.village,
-                            mobileNumber = userRecord.mobile,
-                            latitude=userRecord.latitude,
-                            longitude = userRecord.longitude,
-                            aadharFile = aadharCardImage!!,
-                            gramsevakIdFile = gramsevakIdImage!!,
-                            photoFile = profileImage!!,
-                            tabletImeiFile = tabletImeiImage!!,
-                        )
-                        if(response.isSuccessful){
-                            if(response.body()?.status.equals("True"))
-                            {
-                                withContext(Dispatchers.Main){
-                                    Toast.makeText(this@SyncUserActivity,response.body()?.message,
-                                        Toast.LENGTH_SHORT).show()
-                                    finish()
+
+                try {
+                    users.forEach { userRecord ->
+                        try {
+                            val aadharCardImage =
+                                createFilePart(FileInfo(fileUri = userRecord.aadharIdCardPhoto, fileName = "aadhar_image"))
+                            val gramsevakIdImage =
+                                createFilePart(FileInfo(fileUri = userRecord.gramsevakIdCardPhoto,fileName = "gram_sevak_id_card_photo"))
+                            val profileImage =createFilePart(FileInfo(fileUri = userRecord.beneficaryPhoto,fileName = "photo_of_beneficiary"))
+                            val tabletImeiImage =
+                                createFilePart(FileInfo(fileUri = userRecord.tabletImeiPhoto,fileName = "photo_of_tablet_imei"))
+                            val response= apiService.uploadLaborInfo(
+                                fullName = userRecord.fullName,
+                                grampanchayatName = userRecord.grampanchayatName!!,
+                                aadharNumber = userRecord.aadharCardId,
+                                districtId=userRecord.district,
+                                talukaId =userRecord.taluka,
+                                villageId = userRecord.village,
+                                mobileNumber = userRecord.mobile,
+                                latitude=userRecord.latitude,
+                                longitude = userRecord.longitude,
+                                aadharFile = aadharCardImage!!,
+                                gramsevakIdFile = gramsevakIdImage!!,
+                                photoFile = profileImage!!,
+                                tabletImeiFile = tabletImeiImage!!,)
+                            if(response.isSuccessful){
+                                if(response.body()?.status.equals("True"))
+                                {
+                                    userRecord.isSynced=true
+                                    userDao.updateUser(userRecord)
+                                    val filesList= mutableListOf<Uri>()
+                                    filesList.add(Uri.parse(userRecord.aadharIdCardPhoto))
+                                    filesList.add(Uri.parse(userRecord.beneficaryPhoto))
+                                    filesList.add(Uri.parse(userRecord.gramsevakIdCardPhoto))
+                                    filesList.add(Uri.parse(userRecord.tabletImeiPhoto))
+                                    deleteFilesFromFolder(filesList)
+                                }else{
+                                    userRecord.isSyncFailed=true
+                                    userRecord.syncFailedReason=response.body()?.message
+                                    userDao.updateUser(userRecord)
                                 }
                             }else{
+                                userRecord.isSyncFailed=true
+                                if(response.body()?.message.isNullOrEmpty()){
+                                    userRecord.syncFailedReason="Unsuccessful Response from api with code "+response.code()
+                                }else{
+                                    userRecord.syncFailedReason=response.body()?.message
+                                }
+                                userDao.updateUser(userRecord)
                                 withContext(Dispatchers.Main){
-                                    Toast.makeText(this@SyncUserActivity,resources.getString(R.string.failed_updating_labour),
-                                        Toast.LENGTH_SHORT).show()
                                 }
                             }
-                            Log.d("mytag",""+response.body()?.message)
-                            Log.d("mytag",""+response.body()?.status)
-                        }else{
+                            runOnUiThread {dialog.dismiss()  }
+                            fetchUserList()
+                        } catch (e: Exception) {
+                            Log.d("mytag","Exception : ${e.message}",e)
+                            e.printStackTrace()
+                            runOnUiThread { dialog.dismiss() }
                             withContext(Dispatchers.Main){
                                 Toast.makeText(this@SyncUserActivity,resources.getString(R.string.failed_updating_labour_response),
                                     Toast.LENGTH_SHORT).show()
                             }
                         }
-                        runOnUiThread {dialog.dismiss()  }
-                    } catch (e: Exception) {
-                        runOnUiThread { dialog.dismiss() }
-                        withContext(Dispatchers.Main){
-                            Toast.makeText(this@SyncUserActivity,resources.getString(R.string.failed_updating_labour_response),
-                                Toast.LENGTH_SHORT).show()
-                        }
-                }
-
+                    }
+                }catch (e:Exception){
+                    Log.d("mytag","Exception : ${e.message}",e)
+                    e.printStackTrace()
+                    runOnUiThread { dialog.dismiss() }
+                    withContext(Dispatchers.Main){
+                        Toast.makeText(this@SyncUserActivity,resources.getString(R.string.failed_updating_labour_response),
+                            Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
-
     private suspend fun getUsersFromDatabase(): List<User> {
         val list = AppDatabase.getDatabase(applicationContext).userDao().getAllUsers()
         return list
@@ -196,9 +213,22 @@ class SyncUserActivity : AppCompatActivity() {
             }
             withContext(Dispatchers.Main) {
                 dialog.dismiss()
-            adapter= OfflineUserListAdapter(userList)
+            adapter= OfflineUserListAdapter(userList,this@SyncUserActivity)
             binding.recyclerView.adapter=adapter
             adapter.notifyDataSetChanged() // Notify the adapter that the data has changed
+            }
+        }
+        Log.d("mytag",""+userList.size)
+    }
+
+    fun fetchUserList(){
+        CoroutineScope(Dispatchers.IO).launch{
+            userList=userDao.getUsersWithAreaNames()
+            withContext(Dispatchers.Main) {
+                dialog.dismiss()
+                adapter= OfflineUserListAdapter(userList,this@SyncUserActivity)
+                binding.recyclerView.adapter=adapter
+                adapter.notifyDataSetChanged() // Notify the adapter that the data has changed
             }
         }
         Log.d("mytag",""+userList.size)
@@ -209,7 +239,7 @@ class SyncUserActivity : AppCompatActivity() {
         val file: File? = uriToFile(applicationContext, fileInfo.fileUri)
 
         return file?.let {
-            //Log.d("mytag",""+formatFileSize(it))
+            Log.d("mytag",""+formatFileSize(it))
             val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), it)
             MultipartBody.Part.createFormData(fileInfo.fileName, it.name, requestFile)
         }
@@ -240,6 +270,59 @@ class SyncUserActivity : AppCompatActivity() {
                 null // Return null if there's an error
             }
         }
+    }
+    private suspend fun deleteFilesFromFolder(urisToDelete: List<Uri>) {
+        try {
+            val mediaStorageDir = File(externalMediaDirs[0], "myfiles")
+            val files = mediaStorageDir.listFiles()
+            files?.forEach { file ->
+                if (file.isFile) {
+                    val fileUri = Uri.fromFile(file)
+                    if (urisToDelete.contains(fileUri)) {
+                        if (file.delete()) {
+                            Log.d("mytag", "Deleted file: ${file.absolutePath}")
+                        } else {
+                            Log.d("mytag", "Failed to delete file: ${file.absolutePath}")
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.d("mytag", "Failed to delete file: ${e.message}")
+        }
+    }
+    fun formatFileSize(file: File): String {
+        val fileSizeInBytes = file.length()
+        val fileSizeInKB = fileSizeInBytes / 1024
+        val fileSizeInMB = fileSizeInKB / 1024
+
+        return when {
+            fileSizeInMB > 0 -> String.format("%.2f MB", fileSizeInMB.toFloat())
+            fileSizeInKB > 0 -> String.format("%d KB", fileSizeInKB)
+            else -> String.format("%d bytes", fileSizeInBytes)
+        }
+    }
+    override fun onUserDelete(user: UsersWithAreaNames) {
+
+        val builder = AlertDialog.Builder(this@SyncUserActivity)
+        builder.setTitle(getString(R.string.delete))
+            .setIcon(R.drawable.ic_delete)
+            .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_beneficiary_details))
+            .setPositiveButton(getString(R.string.yes)) { xx, yy ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    val count=userDao.deleteUserById(user.id)
+                    if(count>0){
+                        fetchUserList()
+                        withContext(Dispatchers.Main){
+                            dialog.dismiss()
+                            xx.dismiss()
+                        }
+                    }
+
+                }
+            }
+            .setNegativeButton(getString(R.string.no), null) // If "No" is clicked, do nothing
+            .show()
     }
 
 }
