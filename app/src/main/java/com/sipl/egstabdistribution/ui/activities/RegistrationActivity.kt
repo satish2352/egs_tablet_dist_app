@@ -159,11 +159,8 @@ class RegistrationActivity : AppCompatActivity() {
           }
         }
         binding.ivChangeAadhar.setOnClickListener {
-            if(isInternetAvailable){
+
                 startCameraActivity(REQUEST_CODE_AADHAR_CARD)
-            }else{
-                Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
-            }
         }
         binding.ivChangePhoto.setOnClickListener {
 
@@ -171,9 +168,7 @@ class RegistrationActivity : AppCompatActivity() {
         }
         binding.ivChangeGramsevakId.setOnClickListener {
 
-
                 startCameraActivity(REQUEST_CODE_GRAMSEVAK)
-
         }
         binding.ivChangeTabletImei.setOnClickListener {
 
@@ -239,12 +234,8 @@ class RegistrationActivity : AppCompatActivity() {
             longitude=location.longitude
 
             Log.d("mytag","$latitude,$longitude")
+            binding.etLocation.setText("$latitude,$longitude")
             // Do something with latitude and longitude
-            Toast.makeText(
-                applicationContext,
-                "Location: $latitude, $longitude",
-                Toast.LENGTH_SHORT
-            ).show()
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
@@ -414,9 +405,9 @@ class RegistrationActivity : AppCompatActivity() {
                 latitude
             } ?: run {
                 // Handle case where location is null
-                Toast.makeText(
-                    this@RegistrationActivity, "Unable to retrieve location", Toast.LENGTH_LONG
-                ).show()
+//                Toast.makeText(
+//                    this@RegistrationActivity, "Unable to retrieve location", Toast.LENGTH_LONG
+//                ).show()
             }
         }
     }
@@ -552,7 +543,11 @@ class RegistrationActivity : AppCompatActivity() {
                     if(s?.length==12){
 
                        CoroutineScope(Dispatchers.IO).launch {
-                           checkIfAadharCardExists(s.toString())
+                           if(isInternetAvailable)
+                           {
+                               checkIfAadharCardExists(s.toString())
+                           }
+
                        }
 
                     }
@@ -961,7 +956,7 @@ class RegistrationActivity : AppCompatActivity() {
 
                         CoroutineScope(Dispatchers.IO).launch {
                             runOnUiThread {  dialog.show() }
-                            val beneficiaryPhotoJob=async {val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            val beneficiaryPhotoJob=async {val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),"$latitude,$longitude",addressFromLatLong)!! }
                             beneficiaryPhotoJob.await()
                             withContext(Dispatchers.Main){
                                 dialog.dismiss()
@@ -977,7 +972,7 @@ class RegistrationActivity : AppCompatActivity() {
                         CoroutineScope(Dispatchers.IO).launch {
                             runOnUiThread {  dialog.show() }
                             val imeiPhotoJob= async {
-                                val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                                val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),"$latitude,$longitude",addressFromLatLong)!! }
                             imeiPhotoJob.await()
                             withContext(Dispatchers.Main){
 
@@ -994,7 +989,7 @@ class RegistrationActivity : AppCompatActivity() {
                         aadharIdImagePath= capturedImageUri.toString()
                         CoroutineScope(Dispatchers.IO).launch {
                             runOnUiThread {  dialog.show() }
-                            val aadharCardPhotoJob=async { val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            val aadharCardPhotoJob=async { val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),"$latitude,$longitude",addressFromLatLong)!! }
                             aadharCardPhotoJob.await()
                             withContext(Dispatchers.Main){
                                 dialog.dismiss()
@@ -1008,7 +1003,7 @@ class RegistrationActivity : AppCompatActivity() {
                         gramsevakIdImagePath= capturedImageUri.toString()
                         CoroutineScope(Dispatchers.IO).launch {
                             runOnUiThread {  dialog.show() }
-                            val gramsevakPhotoJob=async { val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),binding.etLocation.text.toString(),addressFromLatLong)!! }
+                            val gramsevakPhotoJob=async { val uri=uriStringToBitmap(this@RegistrationActivity,capturedImageUri.toString(),"$latitude,$longitude",addressFromLatLong)!! }
                             gramsevakPhotoJob.await()
                             withContext(Dispatchers.Main){
                                 dialog.dismiss()
