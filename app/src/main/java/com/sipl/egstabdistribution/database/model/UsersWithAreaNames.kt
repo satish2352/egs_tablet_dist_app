@@ -19,5 +19,6 @@ data class UsersWithAreaNames(
     val districtName: String?,
     val talukaName: String?,
     var syncFailedReason:String,
-    var isSyncFailed:Boolean
+    var isSyncFailed:Boolean,
+    var grampanchayatName:String,
 )

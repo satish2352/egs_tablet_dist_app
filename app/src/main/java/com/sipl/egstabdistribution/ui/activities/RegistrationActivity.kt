@@ -21,6 +21,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -28,6 +29,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
 import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
@@ -129,6 +131,7 @@ class RegistrationActivity : AppCompatActivity() {
         appDatabase=AppDatabase.getDatabase(this)
         areaDao=appDatabase.areaDao()
         userDao=appDatabase.userDao()
+        binding.etGramPanchayatName.visibility=View.GONE
         val emptyByteArray = ByteArray(0)
         CoroutineScope(Dispatchers.IO).launch {
 
@@ -499,6 +502,7 @@ class RegistrationActivity : AppCompatActivity() {
                     for (village in villageList){
                         villageNames.add(village.name)
                     }
+                    villageNames.add("Other")
                     val villageAdapter = ArrayAdapter(
                         this@RegistrationActivity, android.R.layout.simple_list_item_1, villageNames
                     )
@@ -515,7 +519,14 @@ class RegistrationActivity : AppCompatActivity() {
                 }
             }
             binding.actVillage.setOnItemClickListener { parent, view, position, id ->
-                villageId=villageList[position].location_id
+                if(binding.actVillage.text.toString().equals("Other")){
+                    villageId="999999"
+                    binding.etGramPanchayatName.visibility=View.VISIBLE;
+                }else{
+                    binding.etGramPanchayatName.visibility=View.GONE;
+                    villageId=villageList[position].location_id
+                }
+
             }
             binding.actDistrict.setOnFocusChangeListener { abaad, asd ->
                 binding.actDistrict.showDropDown()
@@ -572,17 +583,12 @@ class RegistrationActivity : AppCompatActivity() {
                 if(addresses.size>0){
                     fullAddress= addresses!![0].getAddressLine(0) // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
 
-                    val city: String = addresses!![0].locality
+                   /* val city: String = addresses!![0].locality
                     val state: String = addresses!![0].adminArea
                     val country: String = addresses!![0].countryName
                     val postalCode: String = addresses!![0].postalCode
-                    val knownName: String = addresses!![0].featureName
-                    Log.d("mytag",fullAddress)
-                    Log.d("mytag",city)
-                    Log.d("mytag",state)
-                    Log.d("mytag",country)
-                    Log.d("mytag",postalCode)
-                    Log.d("mytag",knownName)
+                    val knownName: String = addresses!![0].featureName*/
+
                 }
             }
             return fullAddress
@@ -602,13 +608,17 @@ class RegistrationActivity : AppCompatActivity() {
             validationResults.add(false)
         }
         // DOB
-        if (binding.etGramPanchayatName.text.toString().length > 0 && !binding.etGramPanchayatName.text.isNullOrBlank()) {
-            binding.etGramPanchayatName.error = null
-            validationResults.add(true)
-        } else {
-            binding.etGramPanchayatName.error = resources.getString(R.string.enter_grampanchayat_name)
-            validationResults.add(false)
+        if(binding.etGramPanchayatName.isVisible)
+        {
+            if (binding.etGramPanchayatName.text.toString().length > 0 && !binding.etGramPanchayatName.text.isNullOrBlank()) {
+                binding.etGramPanchayatName.error = null
+                validationResults.add(true)
+            } else {
+                binding.etGramPanchayatName.error = resources.getString(R.string.enter_grampanchayat_name)
+                validationResults.add(false)
+            }
         }
+
         // District
         if (binding.actDistrict.enoughToFilter()) {
             binding.actDistrict.error = null

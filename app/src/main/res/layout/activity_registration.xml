@@ -94,7 +94,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins"
-                android:text="@string/village"
+                android:text="@string/grampanchayat_name"
                 android:textSize="10dp"
                 android:textColor="@color/appBlue"
                 />
@@ -109,12 +109,13 @@
                     android:drawableEnd="@drawable/arrow_dropdown"
                     android:paddingLeft="16dp"
                     android:layout_weight="1"
-                    android:hint="@string/village"
+                    android:hint="@string/grampanchayat_name"
                     android:background="@drawable/edittext_background"
                     android:layout_width="wrap_content"
                     android:layout_height="48dp"></AutoCompleteTextView>
             </LinearLayout>
             <TextView
+                android:visibility="gone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"

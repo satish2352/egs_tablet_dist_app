@@ -81,7 +81,13 @@ class OfflineBeneficiaryDetailsActivity : AppCompatActivity() {
             binding.tvFullName.text=user.fullName
             binding.tvDistritct.text=user.districtName
             binding.tvTaluka.text=user.talukaName
-            binding.tvVillage.text=user.villageName
+            if(user.village.equals("999999"))
+            {
+                binding.tvVillage.text=user.grampanchayatName
+            }else{
+                binding.tvVillage.text=user.villageName
+            }
+
             binding.tvMobile.text=user.mobile
             binding.tvAadharCardNumber.text=user.aadharCardId
             loadImageWithRetry(binding.ivImeiPhoto,user.tabletImeiPhoto)

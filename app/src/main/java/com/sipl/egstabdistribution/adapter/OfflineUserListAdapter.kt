@@ -50,7 +50,12 @@ class OfflineUserListAdapter(var list: List<UsersWithAreaNames>,var onUserDelete
             holder.ivPhoto.setImageURI(Uri.parse(list[position].beneficaryPhoto))
             holder.tvFullName.text = list[position]?.fullName ?: "Default"
             holder.tvMobile.text = list[position]?.mobile ?: "Default"
-            val address="${list[position].districtName} ->${list[position].talukaName} ->${list[position].villageName}"
+            var address=""
+            if(list[position].village.equals("999999")){
+                address="${list[position].districtName} ->${list[position].talukaName} ->${list[position].grampanchayatName}"
+            }else{
+                address="${list[position].districtName} ->${list[position].talukaName} ->${list[position].villageName}"
+            }
             holder.tvAddress.text = address
             holder.tvMgnregaId.text= list[position].aadharCardId
             holder.ivDelete.setOnClickListener {
