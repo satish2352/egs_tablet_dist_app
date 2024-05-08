@@ -15,5 +15,6 @@ data class TabUser(
     val taluka_id: Int,
     val taluka_name: String,
     val village_id: Int,
-    val village_name: String
+    val village_name: String,
+    val gram_panchayat_name: String,
 )

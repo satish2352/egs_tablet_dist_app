@@ -101,7 +101,7 @@
                         <TextView
                             android:textSize="14sp"
                             android:textColor="@color/black" android:layout_weight="7"
-                            android:text="@string/village"
+                            android:text="@string/grampanchayat_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"></TextView>
                         <TextView
@@ -115,6 +115,7 @@
                             android:layout_height="wrap_content"></TextView>
                     </LinearLayout>
                     <LinearLayout
+                        android:visibility="gone"
                         android:layout_marginTop="8dp"
                         android:orientation="horizontal"
                         android:layout_width="match_parent"

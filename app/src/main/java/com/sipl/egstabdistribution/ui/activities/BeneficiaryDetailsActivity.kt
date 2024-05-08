@@ -110,7 +110,11 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
                             binding.tvFullName.text=list?.get(0)?.full_name
                             binding.tvDistritct.text=list?.get(0)?.district_name
                             binding.tvTaluka.text=list?.get(0)?.taluka_name
-                            binding.tvVillage.text=list?.get(0)?.village_name
+                            if(list?.get(0)?.village_id.toString()?.equals("999999") == true){
+                                binding.tvVillage.text=list?.get(0)?.gram_panchayat_name
+                            }else{
+                                binding.tvVillage.text=list?.get(0)?.village_name
+                            }
                             binding.tvMobile.text=list?.get(0)?.mobile_number
                             binding.tvAadharCardNumber.text=list?.get(0)?.adhar_card_number.toString()
                             binding.tvGrampanchayatName.text=list?.get(0)?.gram_panchayat_name

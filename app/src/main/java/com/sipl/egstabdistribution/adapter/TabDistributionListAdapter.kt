@@ -1,5 +1,6 @@
 package com.sipl.egstabdistribution.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,8 +38,16 @@ class TabDistributionListAdapter(var tabUserList: MutableList<TabUser>,var curre
             holder.tvFullName.text = tabUserList[position]?.full_name ?: ""
             holder.tvSrNo.text = ((currentPage - 1) * pageSize + position + 1).toString()
             holder.tvMobile.text = tabUserList[position]?.mobile_number ?: ""
-            val address =
-                "${tabUserList[position].district_name} ->${tabUserList[position].taluka_name} ->${tabUserList[position].village_name}"
+           var address=""
+            if(tabUserList[position].village_id.toString().equals("999999")){
+                 address =
+                    "${tabUserList[position].district_name} ->${tabUserList[position].taluka_name} ->${tabUserList[position].gram_panchayat_name}"
+            }else{
+                 address =
+                    "${tabUserList[position].district_name} ->${tabUserList[position].taluka_name} ->${tabUserList[position].village_name}"
+            }
+
+
             holder.tvAddress.text = address
             Glide.with(holder.itemView.context).load(tabUserList[position].photo_of_beneficiary)
                 .override(90,75)
