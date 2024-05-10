@@ -30,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
                         super.onCreate(db)
                     }
                 })
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
