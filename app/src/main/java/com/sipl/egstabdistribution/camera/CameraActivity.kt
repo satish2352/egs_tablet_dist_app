@@ -33,129 +33,144 @@ class CameraActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding=ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        val requestCode = intent.getIntExtra("requestCode", -1)
-        supportActionBar?.hide()
-        // Request camera permissions
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
+        try {
+            val requestCode = intent.getIntExtra("requestCode", -1)
+            supportActionBar?.hide()
             // Request camera permissions
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-            )
-        }
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                // Request camera permissions
+                ActivityCompat.requestPermissions(
+                    this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+                )
+            }
 
-        // Set up the capture button click listener
-        binding.btnCapture.setOnClickListener {
-            binding.progressBar.visibility=View.VISIBLE
-            takePhoto(requestCode)
-        }
+            // Set up the capture button click listener
+            binding.btnCapture.setOnClickListener {
+                binding.progressBar.visibility=View.VISIBLE
+                takePhoto(requestCode)
+            }
 
-        binding.btnRetake.setOnClickListener {
-            binding.btnCapture.isEnabled = true
-            binding.btnRetake.visibility = View.INVISIBLE
+            binding.btnRetake.setOnClickListener {
+                binding.btnCapture.isEnabled = true
+                binding.btnRetake.visibility = View.INVISIBLE
+                binding.btnOkay.visibility= View.INVISIBLE
+                binding.viewFinder.visibility= View.VISIBLE
+                binding.ivPreview.visibility= View.INVISIBLE
+                binding.btnCapture.visibility= View.VISIBLE
+                binding.ivPreview.setImageDrawable(null)
+                startCamera()
+            }
+
+            // Set up the cancel button click listener
+            binding.btnCancel.setOnClickListener {
+                setResult(Activity.RESULT_CANCELED)
+                finish()
+            }
+            binding.btnOkay.setOnClickListener {
+                finish()
+            }
             binding.btnOkay.visibility= View.INVISIBLE
-            binding.viewFinder.visibility= View.VISIBLE
-            binding.ivPreview.visibility= View.INVISIBLE
-            binding.btnCapture.visibility= View.VISIBLE
-            binding.ivPreview.setImageDrawable(null)
-            startCamera()
-        }
 
-        // Set up the cancel button click listener
-        binding.btnCancel.setOnClickListener {
-            setResult(Activity.RESULT_CANCELED)
-            finish()
-        }
-        binding.btnOkay.setOnClickListener {
-            finish()
-        }
-        binding.btnOkay.visibility= View.INVISIBLE
+            binding.btnFlash.setOnClickListener {
+                toggleFlash()
+                Log.d("mytag","toggle")
+            }
 
-        binding.btnFlash.setOnClickListener {
-            toggleFlash()
-            Log.d("mytag","toggle")
-        }
-
-        binding.btnFlash.setImageResource(R.drawable.ic_flash_off)
+            binding.btnFlash.setImageResource(R.drawable.ic_flash_off)
 
 
-        binding.btnToggleCamera.setOnClickListener {
-            toggleCamera()
+            binding.btnToggleCamera.setOnClickListener {
+                toggleCamera()
+            }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
 
     }
 
     private fun toggleFlash() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        try {
+            val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            cameraProviderFuture.addListener({
+                val cameraProvider = cameraProviderFuture.get()
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-            val camera = cameraProvider.bindToLifecycle(this, cameraSelector)
-            val cameraControl = camera.cameraControl
+                val camera = cameraProvider.bindToLifecycle(this, cameraSelector)
+                val cameraControl = camera.cameraControl
 
-            val torchState = camera.cameraInfo.torchState.value ?: TorchState.OFF
+                val torchState = camera.cameraInfo.torchState.value ?: TorchState.OFF
 
-            when (torchState) {
-                TorchState.OFF -> { cameraControl.enableTorch(true)
-                    binding.btnFlash.setImageResource(R.drawable.ic_flash)
+                when (torchState) {
+                    TorchState.OFF -> { cameraControl.enableTorch(true)
+                        binding.btnFlash.setImageResource(R.drawable.ic_flash)
+                    }
+                    TorchState.ON -> { cameraControl.enableTorch(false)
+                        binding.btnFlash.setImageResource(R.drawable.ic_flash_off)
+                    }
                 }
-                TorchState.ON -> { cameraControl.enableTorch(false)
-                    binding.btnFlash.setImageResource(R.drawable.ic_flash_off)
-                }
-            }
-        }, ContextCompat.getMainExecutor(this))
+            }, ContextCompat.getMainExecutor(this))
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
+        }
     }
 
 
 
     private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        try {
+            val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        cameraProviderFuture.addListener({
-            // Camera provider is now guaranteed to be available
-            val cameraProvider = cameraProviderFuture.get()
+            cameraProviderFuture.addListener({
+                // Camera provider is now guaranteed to be available
+                val cameraProvider = cameraProviderFuture.get()
 
-            // Set up the preview
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+                // Set up the preview
+                val preview = Preview.Builder()
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+                    }
+
+                // Set up the image capture use case
+                imageCapture = ImageCapture.Builder()
+                    .build()
+
+                // Select back camera as the default
+                val cameraSelector = if (isFrontCamera) {
+                    CameraSelector.DEFAULT_FRONT_CAMERA
+                } else {
+                    CameraSelector.DEFAULT_BACK_CAMERA
                 }
 
-            // Set up the image capture use case
-            imageCapture = ImageCapture.Builder()
-                .build()
-
-            // Select back camera as the default
-            val cameraSelector = if (isFrontCamera) {
-                CameraSelector.DEFAULT_FRONT_CAMERA
-            } else {
-                CameraSelector.DEFAULT_BACK_CAMERA
-            }
-
-            if (!cameraExists(cameraProvider, cameraSelector)) {
-                Toast.makeText(this@CameraActivity, "Selected camera not available.", Toast.LENGTH_SHORT).show()
-                return@addListener
-            }
+                if (!cameraExists(cameraProvider, cameraSelector)) {
+                    Toast.makeText(this@CameraActivity, "Selected camera not available.", Toast.LENGTH_SHORT).show()
+                    return@addListener
+                }
 
 
-            try {
-                // Unbind any previous use cases before rebinding
-                cameraProvider.unbindAll()
+                try {
+                    // Unbind any previous use cases before rebinding
+                    cameraProvider.unbindAll()
 
-                // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture
-                )
+                    // Bind use cases to camera
+                    cameraProvider.bindToLifecycle(
+                        this, cameraSelector, preview, imageCapture
+                    )
 
-            } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
-            }
+                } catch (exc: Exception) {
+                    Log.e(TAG, "Use case binding failed", exc)
+                }
 
-        }, ContextCompat.getMainExecutor(this))
+            }, ContextCompat.getMainExecutor(this))
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
+        }
     }
     private fun cameraExists(cameraProvider: ProcessCameraProvider, cameraSelector: CameraSelector): Boolean {
         val cameraList = cameraProvider?.let {
@@ -240,17 +255,22 @@ class CameraActivity : AppCompatActivity() {
         IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                startCamera()
-            } else {
-                Toast.makeText(
-                    this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                finish()
+        try {
+            if (requestCode == REQUEST_CODE_PERMISSIONS) {
+                if (allPermissionsGranted()) {
+                    startCamera()
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Permissions not granted by the user.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    finish()
+                }
             }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
     }
 
@@ -263,16 +283,21 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
 
-        if(binding.ivPreview.visibility== View.VISIBLE){
-            binding.btnRetake.visibility = View.INVISIBLE
-            binding.btnOkay.visibility= View.INVISIBLE
-            binding.viewFinder.visibility= View.VISIBLE
-            binding.ivPreview.visibility= View.INVISIBLE
-            binding.btnCapture.visibility=View.VISIBLE
-        }else{
-            super.onBackPressed()
-            setResult(Activity.RESULT_CANCELED)
-            finish()
+        try {
+            if(binding.ivPreview.visibility== View.VISIBLE){
+                binding.btnRetake.visibility = View.INVISIBLE
+                binding.btnOkay.visibility= View.INVISIBLE
+                binding.viewFinder.visibility= View.VISIBLE
+                binding.ivPreview.visibility= View.INVISIBLE
+                binding.btnCapture.visibility=View.VISIBLE
+            }else{
+                super.onBackPressed()
+                setResult(Activity.RESULT_CANCELED)
+                finish()
+            }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
 
     }

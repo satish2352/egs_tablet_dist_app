@@ -60,33 +60,38 @@ class SyncUserActivity : AppCompatActivity(),OnUserDeleteListener {
         super.onCreate(savedInstanceState)
         binding= ActivitySyncUserBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title=resources.getString(R.string.sync_user_data)
-        dialog=CustomProgressDialog(this)
-        dialog.show()
-        val layoutManager= LinearLayoutManager(this, RecyclerView.VERTICAL,false)
-        binding.recyclerView.layoutManager=layoutManager
-        database= AppDatabase.getDatabase(this)
-        userDao=database.userDao()
-        userList=ArrayList<UsersWithAreaNames>()
-        adapter= OfflineUserListAdapter(userList,this)
-        adapter.notifyDataSetChanged()
+        try {
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.title=resources.getString(R.string.sync_user_data)
+            dialog=CustomProgressDialog(this)
+            dialog.show()
+            val layoutManager= LinearLayoutManager(this, RecyclerView.VERTICAL,false)
+            binding.recyclerView.layoutManager=layoutManager
+            database= AppDatabase.getDatabase(this)
+            userDao=database.userDao()
+            userList=ArrayList<UsersWithAreaNames>()
+            adapter= OfflineUserListAdapter(userList,this)
+            adapter.notifyDataSetChanged()
 
-        noInternetDialog= NoInternetDialog(this)
-        ReactiveNetwork
-            .observeNetworkConnectivity(applicationContext)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ connectivity: Connectivity ->
-                Log.d("##", "=>" + connectivity.state())
-                if (connectivity.state().toString() == "CONNECTED") {
-                    isInternetAvailable = true
-                    noInternetDialog.hideDialog()
-                } else {
-                    isInternetAvailable = false
-                    noInternetDialog.showDialog()
-                }
-            }) { throwable: Throwable? -> }
+            noInternetDialog= NoInternetDialog(this)
+            ReactiveNetwork
+                .observeNetworkConnectivity(applicationContext)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ connectivity: Connectivity ->
+                    Log.d("##", "=>" + connectivity.state())
+                    if (connectivity.state().toString() == "CONNECTED") {
+                        isInternetAvailable = true
+                        noInternetDialog.hideDialog()
+                    } else {
+                        isInternetAvailable = false
+                        noInternetDialog.showDialog()
+                    }
+                }) { throwable: Throwable? -> }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
+        }
     }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_sync,menu)
@@ -99,31 +104,33 @@ class SyncUserActivity : AppCompatActivity(),OnUserDeleteListener {
         }
         if(item.itemId==R.id.navigation_sync){
 
-            CoroutineScope(Dispatchers.IO).launch {
-                var count=0;
-                val countJob=async { count=userDao.getUsersCount() }
-                countJob.await()
-                if(count>0){
-                    if(isInternetAvailable){
-                            uploadUsersOnline()
+            try {
+                CoroutineScope(Dispatchers.IO).launch {
+                    var count=0;
+                    val countJob=async { count=userDao.getUsersCount() }
+                    countJob.await()
+                    if(count>0){
+                        if(isInternetAvailable){
+                                uploadUsersOnline()
+                        }else{
+                           runOnUiThread {  noInternetDialog.showDialog() }
+                        }
                     }else{
-                        noInternetDialog.showDialog()
-                    }
-                }else{
 
-                    CoroutineScope(Dispatchers.Main).launch {
-                        Toast.makeText(this@SyncUserActivity,"No Records To Sync",Toast.LENGTH_SHORT).show()
+                        CoroutineScope(Dispatchers.Main).launch {
+                            Toast.makeText(this@SyncUserActivity,"No Records To Sync",Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                Log.d("mytag","Exception",e)
+                e.printStackTrace()
             }
 
 
         }
-
         return super.onOptionsItemSelected(item)
     }
-
-
         private suspend fun uploadUsersOnline(){
             runOnUiThread {
                 dialog.show()
@@ -131,8 +138,6 @@ class SyncUserActivity : AppCompatActivity(),OnUserDeleteListener {
             val apiService = ApiClient.create(this@SyncUserActivity)
             CoroutineScope(Dispatchers.IO).launch {
                 val users = getUsersFromDatabase()
-
-
                 try {
                     users.forEach { userRecord ->
                         try {
@@ -213,37 +218,38 @@ class SyncUserActivity : AppCompatActivity(),OnUserDeleteListener {
     }
     override fun onResume() {
         super.onResume()
-        CoroutineScope(Dispatchers.IO).launch{
-            userList=userDao.getUsersWithAreaNames()
-            Log.d("mytag","=>"+userList.size)
-            val listWithName=userDao.getUsersWithAreaNames()
-            if(!listWithName.isNullOrEmpty()){
-
-                Log.d("mytag",""+ Gson().toJson(listWithName))
-            }else{
-                Log.d("mytag","Empty Or Nukk ")
-            }
-            withContext(Dispatchers.Main) {
-                dialog.dismiss()
-            adapter= OfflineUserListAdapter(userList,this@SyncUserActivity)
-            binding.recyclerView.adapter=adapter
-            adapter.notifyDataSetChanged() // Notify the adapter that the data has changed
-            }
-        }
-        Log.d("mytag",""+userList.size)
-    }
-
-    fun fetchUserList(){
-        CoroutineScope(Dispatchers.IO).launch{
-            userList=userDao.getUsersWithAreaNames()
-            withContext(Dispatchers.Main) {
-                dialog.dismiss()
+        try {
+            CoroutineScope(Dispatchers.IO).launch{
+                userList=userDao.getUsersWithAreaNames()
+                Log.d("mytag","=>"+userList.size)
+                withContext(Dispatchers.Main) {
+                    dialog.dismiss()
                 adapter= OfflineUserListAdapter(userList,this@SyncUserActivity)
                 binding.recyclerView.adapter=adapter
                 adapter.notifyDataSetChanged() // Notify the adapter that the data has changed
+                }
             }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
-        Log.d("mytag",""+userList.size)
+    }
+
+    fun fetchUserList(){
+        try {
+            CoroutineScope(Dispatchers.IO).launch{
+                userList=userDao.getUsersWithAreaNames()
+                withContext(Dispatchers.Main) {
+                    dialog.dismiss()
+                    adapter= OfflineUserListAdapter(userList,this@SyncUserActivity)
+                    binding.recyclerView.adapter=adapter
+                    adapter.notifyDataSetChanged() // Notify the adapter that the data has changed
+                }
+            }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
+        }
     }
 
     private suspend fun createFilePart(fileInfo: FileInfo): MultipartBody.Part? {
@@ -315,26 +321,30 @@ class SyncUserActivity : AppCompatActivity(),OnUserDeleteListener {
         }
     }
     override fun onUserDelete(user: UsersWithAreaNames) {
-
-        val builder = AlertDialog.Builder(this@SyncUserActivity)
-        builder.setTitle(getString(R.string.delete))
-            .setIcon(R.drawable.ic_delete)
-            .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_beneficiary_details))
-            .setPositiveButton(getString(R.string.yes)) { xx, yy ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    val count=userDao.deleteUserById(user.id)
-                    if(count>0){
-                        fetchUserList()
-                        withContext(Dispatchers.Main){
-                            dialog.dismiss()
-                            xx.dismiss()
+        try {
+            val builder = AlertDialog.Builder(this@SyncUserActivity)
+            builder.setTitle(getString(R.string.delete))
+                .setIcon(R.drawable.ic_delete)
+                .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_beneficiary_details))
+                .setPositiveButton(getString(R.string.yes)) { xx, yy ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val count=userDao.deleteUserById(user.id)
+                        if(count>0){
+                            fetchUserList()
+                            withContext(Dispatchers.Main){
+                                dialog.dismiss()
+                                xx.dismiss()
+                            }
                         }
-                    }
 
+                    }
                 }
-            }
-            .setNegativeButton(getString(R.string.no), null) // If "No" is clicked, do nothing
-            .show()
+                .setNegativeButton(getString(R.string.no), null) // If "No" is clicked, do nothing
+                .show()
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
+        }
     }
 
 }

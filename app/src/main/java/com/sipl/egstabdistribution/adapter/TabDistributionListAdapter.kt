@@ -47,24 +47,16 @@ class TabDistributionListAdapter(var tabUserList: MutableList<TabUser>,var curre
                     "${tabUserList[position].district_name} ->${tabUserList[position].taluka_name} ->${tabUserList[position].village_name}"
             }
 
-
             holder.tvAddress.text = address
-            Glide.with(holder.itemView.context).load(tabUserList[position].photo_of_beneficiary)
+            /*Glide.with(holder.itemView.context).load(tabUserList[position].photo_of_beneficiary)
                 .override(90,75)
-                .into(holder.ivPhoto)
-
-           /* holder.itemView.setOnClickListener {
-               *//* val intent= Intent(holder.itemView.context,BeneficiaryDetailsActivity::class.java)
-                intent.putExtra("id",tabUserList[position].id.toString())
-                Log.d("mytag",tabUserList[position].id.toString())
-                holder.itemView.context.startActivity(intent)*//*
-            }*/
-
+                .into(holder.ivPhoto)*/
             holder.itemView.setOnClickListener {
                 onBeneficiaryClickListener.onClick(tabUserList[position])
             }
         }catch (e:Exception){
-
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
     }
 

@@ -50,29 +50,34 @@ class OfflineBeneficiaryDetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding=ActivityOfflineBeneficiaryDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title=resources.getString(R.string.beneficiary_details)
-        database= AppDatabase.getDatabase(this)
-        userDao=database.userDao()
-        userList=ArrayList<UsersWithAreaNames>()
-        var userId=intent.extras?.getString("id")
-        CoroutineScope(Dispatchers.IO).launch {
-            user= userDao.getUsersWithAreaNamesById(Integer.parseInt(userId))!!
-            runOnUiThread {
-                initializeFields()
+        try {
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.title=resources.getString(R.string.beneficiary_details)
+            database= AppDatabase.getDatabase(this)
+            userDao=database.userDao()
+            userList=ArrayList<UsersWithAreaNames>()
+            var userId=intent.extras?.getString("id")
+            CoroutineScope(Dispatchers.IO).launch {
+                user= userDao.getUsersWithAreaNamesById(Integer.parseInt(userId))!!
+                runOnUiThread {
+                    initializeFields()
+                }
             }
-        }
-        binding.ivGramsevakId.setOnClickListener {
-            showPhotoZoomDialog(user.gramsevakIdCardPhoto)
-        }
-        binding.ivPhoto.setOnClickListener {
-            showPhotoZoomDialog(user.beneficaryPhoto)
-        }
-        binding.ivAadhar.setOnClickListener {
-            showPhotoZoomDialog(user.aadharIdCardPhoto)
-        }
-        binding.ivImeiPhoto.setOnClickListener {
-            showPhotoZoomDialog(user.tabletImeiPhoto)
+            binding.ivGramsevakId.setOnClickListener {
+                showPhotoZoomDialog(user.gramsevakIdCardPhoto)
+            }
+            binding.ivPhoto.setOnClickListener {
+                showPhotoZoomDialog(user.beneficaryPhoto)
+            }
+            binding.ivAadhar.setOnClickListener {
+                showPhotoZoomDialog(user.aadharIdCardPhoto)
+            }
+            binding.ivImeiPhoto.setOnClickListener {
+                showPhotoZoomDialog(user.tabletImeiPhoto)
+            }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
     }
 
@@ -100,7 +105,10 @@ class OfflineBeneficiaryDetailsActivity : AppCompatActivity() {
             }else{
                 binding.layoutSyncFailed.visibility= View.GONE
             }
+            binding.tvLatLong.setText("${user.latitude},${user.longitude}")
         } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
     }
     fun loadImageWithRetry(imageView: ImageView, url: String, retryCount: Int = 3) {
@@ -164,7 +172,8 @@ class OfflineBeneficiaryDetailsActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
         } catch (e: Exception) {
-
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

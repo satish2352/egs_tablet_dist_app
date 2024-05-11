@@ -54,7 +54,7 @@
     <string name="submit">Submit</string>
     <string name="image_capture_failed">Image Capture Failed Try Again</string>
     <string name="unknown_request_code">Unknown Request Code</string>
-    <string name="user_added_successfully">User Addded Successfully</string>
+    <string name="user_added_successfully">User Added Successfully</string>
     <string name="user_not_added_please_try_again">User not added please try again</string>
     <string name="registration_saved_offline">Registrations Saved Offline</string>
     <string name="entries_to_sync">Entries To Sync</string>
@@ -64,4 +64,10 @@
     <string name="sync">Sync</string>
     <string name="beneficiary_upload_failed">Beneficiary Upload Failed</string>
     <string name="sync_failed_reason">Reason</string>
+    <string name="select_grampanchayat">Select Grampanchayat</string>
+    <string name="are_you_sure_you_want_to_logout">Are you sure you want to logout ?</string>
+    <string name="are_you_sure_you_want_to_exit_this_screen">Are you sure you want to exit this screen?</string>
+    <string name="app_requires_location_enabled_please_enabled_location">App requires location enabled. Please enabled location</string>
+    <string name="enable">Enable</string>
+    <string name="enable_location">Enable Location</string>
 </resources>

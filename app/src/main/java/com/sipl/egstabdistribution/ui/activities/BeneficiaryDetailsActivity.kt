@@ -28,6 +28,7 @@ import com.sipl.egstabdistribution.databinding.ActivityBeneficiaryDetailsBinding
 import com.sipl.egstabdistribution.model.delete.DeleteModel
 import com.sipl.egstabdistribution.model.detailsbyid.UserDetailsModel
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
+import com.sipl.egstabdistribution.utils.NoInternetDialog
 import com.sipl.egstabdistribution.webservice.ApiClient
 import io.getstream.photoview.PhotoView
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -45,6 +46,7 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
     private lateinit var dialog: CustomProgressDialog
     private var beneficiaryid=""
     private  var isInternetAvailable=false
+    private lateinit var noInternetDialog: NoInternetDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +70,7 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
         binding.ivImeiPhoto.setOnClickListener {
             showPhotoZoomDialog(imeiPhoto)
         }
+        noInternetDialog= NoInternetDialog(this)
         ReactiveNetwork
             .observeNetworkConnectivity(applicationContext)
             .subscribeOn(Schedulers.io())
@@ -77,8 +80,10 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
                 if (connectivity.state().toString() == "CONNECTED") {
                     isInternetAvailable = true
                     getLabourDetails(beneficiaryid)
+                    noInternetDialog.hideDialog()
                 } else {
                     isInternetAvailable = false
+                    noInternetDialog.showDialog()
 
                 }
             }) { throwable: Throwable? -> }
@@ -234,23 +239,29 @@ class BeneficiaryDetailsActivity : AppCompatActivity() {
     private fun showPhotoZoomDialog(uri:String){
 
         try {
-            val dialog= Dialog(this@BeneficiaryDetailsActivity)
-            dialog.setContentView(R.layout.layout_zoom_image)
-            val width = ViewGroup.LayoutParams.MATCH_PARENT
-            val height = ViewGroup.LayoutParams.WRAP_CONTENT
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            dialog.window?.setLayout(width, height)
-            dialog.show()
-            val photoView=dialog.findViewById<PhotoView>(R.id.photoView)
-            val ivClose=dialog.findViewById<ImageView>(R.id.ivClose)
-            Glide.with(this@BeneficiaryDetailsActivity)
-                .load(uri)
-                .into(photoView)
-            ivClose.setOnClickListener {
-                dialog.dismiss()
+            if(isInternetAvailable) {
+                val dialog = Dialog(this@BeneficiaryDetailsActivity)
+                dialog.setContentView(R.layout.layout_zoom_image)
+                val width = ViewGroup.LayoutParams.MATCH_PARENT
+                val height = ViewGroup.LayoutParams.WRAP_CONTENT
+                dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                dialog.window?.setLayout(width, height)
+                dialog.show()
+                val photoView = dialog.findViewById<PhotoView>(R.id.photoView)
+                val ivClose = dialog.findViewById<ImageView>(R.id.ivClose)
+                Glide.with(this@BeneficiaryDetailsActivity)
+                    .load(uri)
+                    .into(photoView)
+                ivClose.setOnClickListener {
+                    dialog.dismiss()
+                }
+            }else
+            {
+                Toast.makeText(this@BeneficiaryDetailsActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
             }
         } catch (e: Exception) {
-
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
     }
     fun loadImageWithRetry(imageView: ImageView, url: String,retryCount: Int = 3) {

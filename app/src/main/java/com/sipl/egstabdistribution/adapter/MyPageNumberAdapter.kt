@@ -1,6 +1,7 @@
 package com.sipl.egstabdistribution.adapter
 
 import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,20 +34,25 @@ public class MyPageNumberAdapter(var pageSize:Int,var currentPage:String,private
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.tvPageNo.text=(position+1).toString()
+        try {
+            holder.tvPageNo.text=(position+1).toString()
 
-        holder.itemView.setOnClickListener {
-            listener.onPageNumberClicked((position+1))
-            val previousSelectedItemIndex = selectedItemIndex
-            selectedItemIndex = holder.adapterPosition
-            notifyItemChanged(previousSelectedItemIndex)
-            notifyItemChanged(selectedItemIndex)
-        }
-        if (Integer.parseInt(currentPage) == position+1) {
-            //holder.tvPageNo.setTextColor(holder.itemView.context.resources.getColor(R.color.appBlue)) // Change to your desired color
-            holder.tvPageNo.setTextColor(Color.RED) // Change to your desired color
-        } else {
-            holder.tvPageNo.setTextColor(Color.BLACK) // Change to your default text color
+            holder.itemView.setOnClickListener {
+                listener.onPageNumberClicked((position+1))
+                val previousSelectedItemIndex = selectedItemIndex
+                selectedItemIndex = holder.adapterPosition
+                notifyItemChanged(previousSelectedItemIndex)
+                notifyItemChanged(selectedItemIndex)
+            }
+            if (Integer.parseInt(currentPage) == position+1) {
+                //holder.tvPageNo.setTextColor(holder.itemView.context.resources.getColor(R.color.appBlue)) // Change to your desired color
+                holder.tvPageNo.setTextColor(Color.RED) // Change to your desired color
+            } else {
+                holder.tvPageNo.setTextColor(Color.BLACK) // Change to your default text color
+            }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
     }
     interface OnPageNumberClickListener {

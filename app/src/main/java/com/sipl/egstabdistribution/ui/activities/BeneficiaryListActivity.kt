@@ -22,6 +22,7 @@ import com.sipl.egstabdistribution.model.TabDistList.TabUser
 import com.sipl.egstabdistribution.ui.start.LoginActivity
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
 import com.sipl.egstabdistribution.utils.MySharedPref
+import com.sipl.egstabdistribution.utils.NoInternetDialog
 import com.sipl.egstabdistribution.webservice.ApiClient
 import com.sipl.egstabdistribution.webservice.ApiService
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -37,6 +38,7 @@ class BeneficiaryListActivity : AppCompatActivity(),
     lateinit var binding: ActivityMainBinding
     private lateinit var dialog: CustomProgressDialog
     private  var isInternetAvailable=false
+    private lateinit var noInternetDialog: NoInternetDialog
     private lateinit var apiService: ApiService
     private lateinit var adapter:TabDistributionListAdapter
     private var tabUserList= mutableListOf<TabUser>()
@@ -47,66 +49,73 @@ class BeneficiaryListActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         binding= ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title=resources.getString(R.string.beneficiary_list)
-        dialog= CustomProgressDialog(this)
-        apiService= ApiClient.create(this)
-        adapter= TabDistributionListAdapter(tabUserList,0,pageSize,this)
-        binding.recyclerView.layoutManager= LinearLayoutManager(this, RecyclerView.VERTICAL,false)
-        binding.recyclerViewPageNumbers.layoutManager= LinearLayoutManager(this, RecyclerView.HORIZONTAL,false)
-        binding.recyclerView.adapter=adapter
-        binding.recyclerView.setScrollbarFadingEnabled(false)
-        binding.recyclerViewPageNumbers.setScrollbarFadingEnabled(false)
-        adapter.notifyDataSetChanged()
-        paginationAdapter= MyPageNumberAdapter(0,"0",this)
-        currentPage="1"
-        ReactiveNetwork
-            .observeNetworkConnectivity(applicationContext)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ connectivity: Connectivity ->
-                Log.d("##", "=>" + connectivity.state())
-                if (connectivity.state().toString() == "CONNECTED") {
-                    isInternetAvailable = true
-                    CoroutineScope(Dispatchers.IO).launch {
-                        getDataFromServer("1",pageSize.toString())
+        try {
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.title=resources.getString(R.string.beneficiary_list)
+            dialog= CustomProgressDialog(this)
+            apiService= ApiClient.create(this)
+            adapter= TabDistributionListAdapter(tabUserList,0,pageSize,this)
+            binding.recyclerView.layoutManager= LinearLayoutManager(this, RecyclerView.VERTICAL,false)
+            binding.recyclerViewPageNumbers.layoutManager= LinearLayoutManager(this, RecyclerView.HORIZONTAL,false)
+            binding.recyclerView.adapter=adapter
+            binding.recyclerView.setScrollbarFadingEnabled(false)
+            binding.recyclerViewPageNumbers.setScrollbarFadingEnabled(false)
+            adapter.notifyDataSetChanged()
+            paginationAdapter= MyPageNumberAdapter(0,"0",this)
+            currentPage="1"
+            noInternetDialog= NoInternetDialog(this)
+            ReactiveNetwork
+                .observeNetworkConnectivity(applicationContext)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ connectivity: Connectivity ->
+                    Log.d("##", "=>" + connectivity.state())
+                    if (connectivity.state().toString() == "CONNECTED") {
+                        isInternetAvailable = true
+                        noInternetDialog.hideDialog()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            getDataFromServer("1",pageSize.toString())
+                        }
+                    } else {
+                        isInternetAvailable = false
+
+                        noInternetDialog.showDialog()
                     }
-                } else {
-                    isInternetAvailable = false
+                }) { throwable: Throwable? -> }
 
+            binding.tvNoRecords.visibility=View.GONE
+
+            /* val pageNumberRecyclerView = findViewById<PageNumberRecyclerView>(R.id.recyclerViewPageNumbers);
+                  pageNumberRecyclerView.setTotalPages(20, this);*/
+
+            binding.floatingActionButton.setOnClickListener {
+                if(isInternetAvailable){
+                    val intent=Intent(this, RegistrationActivity::class.java)
+                    startActivity(intent)
+                }else{
+                    Toast.makeText(this@BeneficiaryListActivity,
+                        getString(R.string.please_check_internet_connection),Toast.LENGTH_LONG).show()
                 }
-            }) { throwable: Throwable? -> }
-
-        binding.tvNoRecords.visibility=View.GONE
-
-       /* val pageNumberRecyclerView = findViewById<PageNumberRecyclerView>(R.id.recyclerViewPageNumbers);
-        pageNumberRecyclerView.setTotalPages(20, this);*/
-
-        binding.floatingActionButton.setOnClickListener {
-            if(isInternetAvailable){
-                val intent=Intent(this, RegistrationActivity::class.java)
-                startActivity(intent)
-            }else{
-                Toast.makeText(this@BeneficiaryListActivity,
-                    getString(R.string.please_check_internet_connection),Toast.LENGTH_LONG).show()
             }
+            binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    if (dx > 0) {
+                        // Scrolling towards the right
+                        binding.layoutIconScroll.iVScrollableIcon.visibility = View.VISIBLE
+                    } else if (dx < 0) {
+                        // Scrolling towards the left
+                        binding.layoutIconScroll.iVScrollableIcon.visibility = View.VISIBLE
+                    } else {
+                        // No horizontal scrolling (stopped)
+                        binding.layoutIconScroll.iVScrollableIcon.visibility = View.GONE
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
-        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if (dx > 0) {
-                    // Scrolling towards the right
-                    binding.layoutIconScroll.iVScrollableIcon.visibility = View.VISIBLE
-                } else if (dx < 0) {
-                    // Scrolling towards the left
-                    binding.layoutIconScroll.iVScrollableIcon.visibility = View.VISIBLE
-                } else {
-                    // No horizontal scrolling (stopped)
-                    binding.layoutIconScroll.iVScrollableIcon.visibility = View.GONE
-                }
-            }
-        })
-
 
 
     }
@@ -114,14 +123,21 @@ class BeneficiaryListActivity : AppCompatActivity(),
     override fun onResume() {
         super.onResume()
         CoroutineScope(Dispatchers.IO).launch {
-            getDataFromServer(currentPage,pageSize.toString())
+
+                getDataFromServer(currentPage,pageSize.toString())
+
         }
     }
 
 
     private suspend fun getDataFromServer(startPageNumber: String,pageLength:String){
-        runOnUiThread {
-            dialog.show()
+        try {
+            runOnUiThread {
+                dialog.show()
+            }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -134,8 +150,6 @@ class BeneficiaryListActivity : AppCompatActivity(),
                                 binding.tvNoRecords.visibility=View.GONE
                                 tabUserList= response.body()?.data?.toMutableList()!!
                                 adapter= TabDistributionListAdapter(tabUserList,Integer.parseInt(response.body()?.page_no_to_hilight),pageSize,this@BeneficiaryListActivity)
-                                Log.d("mytag",""+tabUserList.size)
-                                Log.d("mytag",""+response.body()?.status)
                                 binding.recyclerView.adapter=adapter
                                 adapter.notifyDataSetChanged()
                                 val pageAdapter=MyPageNumberAdapter(response.body()?.totalPages!!,response.body()?.page_no_to_hilight.toString(),this@BeneficiaryListActivity)
@@ -148,14 +162,10 @@ class BeneficiaryListActivity : AppCompatActivity(),
                                 }
                                 binding.recyclerViewPageNumbers.adapter=pageAdapter
                                 pageAdapter.notifyDataSetChanged()
-                                /*Toast.makeText(this@BeneficiaryListActivity,response.body()?.message,
-                                    Toast.LENGTH_SHORT).show()*/
+
                             }
                         }else{
-
-
                            runOnUiThread {
-
                                tabUserList.clear()
                                adapter.notifyDataSetChanged()
                                binding.tvNoRecords.visibility=View.VISIBLE
@@ -172,10 +182,7 @@ class BeneficiaryListActivity : AppCompatActivity(),
                                 Toast.LENGTH_SHORT).show()
                         }
                     }
-                    Log.d("mytag",""+response.body()?.message)
-                    Log.d("mytag",""+response.body()?.status)
                 }else{
-
                     withContext(Dispatchers.Main){
                         Toast.makeText(this@BeneficiaryListActivity,resources.getString(R.string.response_unsuccessfull),
                             Toast.LENGTH_SHORT).show()
@@ -196,41 +203,22 @@ class BeneficiaryListActivity : AppCompatActivity(),
     }
 
     override fun onPageNumberClicked(pageNumber: Int) {
-        currentPage="$pageNumber"
-        Log.d("mytag","ListActivity :: getDataFromServer "+pageNumber)
-        CoroutineScope(Dispatchers.IO).launch {
-            getDataFromServer("$pageNumber",pageSize.toString())
-            paginationAdapter.setSelectedPage(pageNumber)
+        try {
+            if (isInternetAvailable) {
+                currentPage="$pageNumber"
+                Log.d("mytag","ListActivity :: getDataFromServer "+pageNumber)
+                CoroutineScope(Dispatchers.IO).launch {
+                    getDataFromServer("$pageNumber",pageSize.toString())
+                    paginationAdapter.setSelectedPage(pageNumber)
+                }
+            }else{
+                Toast.makeText(this@BeneficiaryListActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
     }
-
-    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu,menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(item.itemId== R.id.action_logout){
-            AlertDialog.Builder(this)
-                .setMessage("Are you sure you want to logout ?")
-                .setPositiveButton("Yes") { dialog, _ ->
-                    // Open the location settings to enable GPS
-                    val mySharedPref= MySharedPref(this@BeneficiaryListActivity)
-                    mySharedPref.clearAll()
-                    val intent= Intent(this@BeneficiaryListActivity, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(intent)
-                    dialog.dismiss()
-                }
-                .setNegativeButton("No") { dialog, _ ->
-                    dialog.dismiss()
-                    // Handle the case when the user chooses not to enable GPS
-                }
-                .show()
-
-        }
-        return super.onOptionsItemSelected(item)
-    }*/
 
     override fun onClick(user: TabUser) {
 

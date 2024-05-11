@@ -3,6 +3,7 @@ package com.sipl.egstabdistribution.ui.activities
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -61,9 +62,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -128,83 +126,105 @@ class RegistrationActivity : AppCompatActivity() {
             }) { throwable: Throwable? -> }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title=resources.getString(R.string.beneficiary_registration)
-        appDatabase=AppDatabase.getDatabase(this)
-        areaDao=appDatabase.areaDao()
-        userDao=appDatabase.userDao()
-        binding.etGramPanchayatName.visibility=View.GONE
-        val emptyByteArray = ByteArray(0)
-        CoroutineScope(Dispatchers.IO).launch {
+        try {
+            appDatabase=AppDatabase.getDatabase(this)
+            areaDao=appDatabase.areaDao()
+            userDao=appDatabase.userDao()
+            binding.etGramPanchayatName.visibility=View.GONE
+            val emptyByteArray = ByteArray(0)
+            CoroutineScope(Dispatchers.IO).launch {
 
-            aadharCardFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"aadharCardFile")!!
-            beneficiaryPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"beneficiaryPhotoFile")!!
-            imeiPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"imeiPhotoFile")!!
-            gramsevakIdPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"gramsevakIdPhoto")!!
-        }
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        binding.btnRegister.setOnClickListener {
-          if(validateFieldsX()){
-              if(isInternetAvailable)
-              {
-                  CoroutineScope(Dispatchers.Default).launch {
-                      val aadharCheckJob=async { checkIfAadharCardExists(binding.etAadharCard.text.toString())}
-                      isAadharVerified=aadharCheckJob.await()
-                      if(isAadharVerified){
-                          saveUserDetails()
+                aadharCardFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"aadharCardFile")!!
+                beneficiaryPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"beneficiaryPhotoFile")!!
+                imeiPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"imeiPhotoFile")!!
+                gramsevakIdPhotoFile= createTempJpgFile(this@RegistrationActivity,emptyByteArray,"gramsevakIdPhoto")!!
+            }
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+            locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            binding.btnRegister.setOnClickListener {
+              if(validateFieldsX()){
+                  if(isInternetAvailable)
+                  {
+                      CoroutineScope(Dispatchers.Default).launch {
+                          val aadharCheckJob=async { checkIfAadharCardExists(binding.etAadharCard.text.toString())}
+                          isAadharVerified=aadharCheckJob.await()
+                          if(isAadharVerified){
+                              saveUserDetails()
+                          }
                       }
+                  }else{
+                      saveUserDetails();
+                      Toast.makeText(this@RegistrationActivity,resources.getString(R.string.enter_all_details),Toast.LENGTH_LONG).show()
                   }
               }else{
-                  saveUserDetails();
-                  Toast.makeText(this@RegistrationActivity,resources.getString(R.string.enter_all_details),Toast.LENGTH_LONG).show()
+                  Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
               }
-          }else{
-              Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
-          }
-        }
-        binding.ivChangeAadhar.setOnClickListener {
-
-                startCameraActivity(REQUEST_CODE_AADHAR_CARD)
-        }
-        binding.ivChangePhoto.setOnClickListener {
-
-                startCameraActivity(REQUEST_CODE_PHOTO)
-        }
-        binding.ivChangeGramsevakId.setOnClickListener {
-
-                startCameraActivity(REQUEST_CODE_GRAMSEVAK)
-        }
-        binding.ivChangeTabletImei.setOnClickListener {
-
-                startCameraActivity(REQUEST_CODE_TABLET_IMEI)
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            val waitingJob=async { districtList=areaDao.getAllDistrict() }
-            waitingJob.await()
-            Log.d("mytag",districtList.size.toString())
-            withContext(Dispatchers.Main){
-                for (district in districtList){
-                    districtNames.add(district.name)
-                }
-                initializeFields()
             }
+            binding.ivChangeAadhar.setOnClickListener {
 
+                if (!isLocationEnabled()) {
+                    showEnableLocationDialog()
+                } else {
+                    startCameraActivity(REQUEST_CODE_AADHAR_CARD)
+                }
+
+            }
+            binding.ivChangePhoto.setOnClickListener {
+                if (!isLocationEnabled()) {
+                    showEnableLocationDialog()
+                } else {
+                    startCameraActivity(REQUEST_CODE_PHOTO)
+                }
+            }
+            binding.ivChangeGramsevakId.setOnClickListener {
+                if (!isLocationEnabled()) {
+                    showEnableLocationDialog()
+                } else {
+                    startCameraActivity(REQUEST_CODE_GRAMSEVAK)
+                }
+            }
+            binding.ivChangeTabletImei.setOnClickListener {
+
+                if (!isLocationEnabled()) {
+                    showEnableLocationDialog()
+                } else {
+                    startCameraActivity(REQUEST_CODE_TABLET_IMEI)
+                }
+            }
+            CoroutineScope(Dispatchers.IO).launch {
+                val waitingJob=async { districtList=areaDao.getAllDistrict() }
+                waitingJob.await()
+                Log.d("mytag",districtList.size.toString())
+                withContext(Dispatchers.Main){
+                    for (district in districtList){
+                        districtNames.add(district.name)
+                    }
+                    initializeFields()
+                }
+
+            }
+        } catch (e: Exception) {
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-
-                val builder = AlertDialog.Builder(this@RegistrationActivity)
-                builder.setTitle("Exit")
-                    .setMessage("Are you sure you want to exit this screen?")
-                    .setPositiveButton("Yes") { _, _ ->
-                        // If "Yes" is clicked, exit the app
-                        finish()
-                    }
-                    .setNegativeButton("No", null) // If "No" is clicked, do nothing
-                    .show()
-
+                try {
+                    val builder = AlertDialog.Builder(this@RegistrationActivity)
+                    builder.setTitle(resources.getString(R.string.exit))
+                        .setMessage(getString(R.string.are_you_sure_you_want_to_exit_this_screen))
+                        .setPositiveButton(resources.getString(R.string.yes)) { _, _ ->
+                            // If "Yes" is clicked, exit the app
+                            finish()
+                        }
+                        .setNegativeButton(resources.getString(R.string.no), null) // If "No" is clicked, do nothing
+                        .show()
+                } catch (e: Exception) {
+                    Log.d("mytag","Exception",e)
+                    e.printStackTrace()
+                }
             }
         })
-
         try {
             if (ActivityCompat.checkSelfPermission(
                     this,
@@ -216,6 +236,7 @@ class RegistrationActivity : AppCompatActivity() {
             ) {
                 requestThePermissions()
                 return
+
             }
             locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,
@@ -224,7 +245,8 @@ class RegistrationActivity : AppCompatActivity() {
                 locationListener
             )
         } catch (e: Exception) {
-
+            Log.d("mytag","Exception",e)
+            e.printStackTrace()
         }
 
     }
@@ -309,60 +331,7 @@ class RegistrationActivity : AppCompatActivity() {
 
     }
 
-    suspend fun uriStringToTempFile(context: Context, uriString: String, text: String, addressText: String): File? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val uri = Uri.parse(uriString)
-                val futureTarget = Glide.with(context)
-                    .asBitmap()
-                    .load(uri)
-                    .submit()
-                val bitmap = futureTarget.get()
 
-                // Add text overlay to the bitmap
-                val canvas = Canvas(bitmap)
-                val paint = Paint().apply {
-                    color = Color.RED
-                    textSize = 50f // Text size in pixels
-                    isAntiAlias = true
-                    style = Paint.Style.FILL
-                }
-                val currentDateTime = Date()
-                val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                val formattedDateTime = formatter.format(currentDateTime)
-                val x = 50f // Adjust the x-coordinate as needed
-                val y = bitmap.height.toFloat() - 50f // Adjust the y-coordinate as needed
-                val xAddress = 50f // Adjust the x-coordinate as needed
-                val yAddress = bitmap.height.toFloat() - 100f
-                canvas.drawText(text, x, y, paint)
-                val addressTextWidth = paint.measureText(addressText)
-                val availableWidth = bitmap.width.toFloat() - xAddress // A
-                if(addressTextWidth > availableWidth){
-                    val (firstHalf, secondHalf) = splitStringByHalf(addressText)
-                    canvas.drawText(firstHalf, xAddress, yAddress-50, paint)
-                    canvas.drawText(secondHalf, xAddress, yAddress, paint)
-                    canvas.drawText(formattedDateTime, xAddress, yAddress-100, paint)
-                }else{
-                    canvas.drawText(addressText, xAddress, yAddress, paint)
-                    canvas.drawText(formattedDateTime, xAddress, yAddress-50, paint)
-                }
-
-                // Save the modified bitmap to a temporary file
-                val tempFile = File.createTempFile("temp_image", ".jpg", context.cacheDir)
-                val outputStream = FileOutputStream(tempFile)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 30, outputStream)
-                outputStream.close()
-
-                tempFile // Return the temporary file containing the modified bitmap
-            } catch (e: Exception) {
-                val emptyByteArray = ByteArray(0)
-                val tempEmptyFile=createTempJpgFile(context,emptyByteArray,"empty_image")
-                Log.d("mytag", "Exception => " + e.message)
-                e.printStackTrace()
-                tempEmptyFile
-            }
-        }
-    }
     fun splitStringByHalf(input: String): Pair<String, String> {
         val length = input.length
         val halfLength = length / 2
@@ -372,8 +341,6 @@ class RegistrationActivity : AppCompatActivity() {
     }
     override fun onResume() {
         super.onResume()
-        //checkAndPromptGps()
-        requestThePermissions()
         if (!isLocationEnabled()) {
             showEnableLocationDialog()
             getTheLocation()
@@ -396,14 +363,10 @@ class RegistrationActivity : AppCompatActivity() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // Request location permissions
-            ActivityCompat.requestPermissions(
-                this@RegistrationActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000
-            )
-            Log.d("mytag", "requestLocationUpdates()  return ")
+           requestThePermissions()
             return
         }
-        Log.d("mytag", "requestLocationUpdates() ")
-
+        Log.d("mytag", "requestLocationUpdates() s")
         // Request last known location
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             location?.let {
@@ -419,24 +382,21 @@ class RegistrationActivity : AppCompatActivity() {
     }
     private fun showEnableLocationDialog() {
         val builder = AlertDialog.Builder(this@RegistrationActivity)
-        builder.setMessage("Location services are disabled. Do you want to enable them?")
-            .setCancelable(false).setPositiveButton("Yes") { dialog, _ ->
+        builder.setMessage(getString(R.string.app_requires_location_enabled_please_enabled_location))
+            .setTitle(resources.getString(R.string.enable_location))
+            .setIcon(R.drawable.ic_location_colored)
+            .setCancelable(false).setPositiveButton(resources.getString(R.string.enable)) { dialog, _ ->
                 dialog.dismiss()
                 startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-            }.setNegativeButton("No") { dialog, _ ->
+            }
+            .setNegativeButton(resources.getString(R.string.no)){dialog,_ ->
                 dialog.dismiss()
-                // Handle the case when the user refuses to enable location services
-                Toast.makeText(
-                    this@RegistrationActivity,
-                    "Unable to retrieve location without enabling location services",
-                    Toast.LENGTH_LONG
-                ).show()
             }
         val alert = builder.create()
         alert.show()
     }
     private fun getTheLocation() {
-
+        Log.d("mytag","getTheLocation")
         try {
             if (ActivityCompat.checkSelfPermission(
                     this,
@@ -446,7 +406,7 @@ class RegistrationActivity : AppCompatActivity() {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                requestThePermissions()
+               // requestThePermissions()
                 return
             }
             fusedLocationClient.lastLocation
@@ -665,31 +625,24 @@ class RegistrationActivity : AppCompatActivity() {
         }
         if (aadharIdImagePath.toString().length > 0) {
             validationResults.add(true)
-            Log.d("mytag","aadharIdImagePath => true")
         } else {
             validationResults.add(false)
-            Log.d("mytag","aadharIdImagePath => false")
         }
         if (gramsevakIdImagePath.toString().length > 0) {
             validationResults.add(true)
-            Log.d("mytag","gramsevakIdImagePath => true")
         } else {
             validationResults.add(false)
-            Log.d("mytag","gramsevakIdImagePath => false")
+
         }
         if (photoImagePath.toString().length > 0) {
             validationResults.add(true)
-            Log.d("mytag","photoImagePath => true")
         } else {
             validationResults.add(false)
-            Log.d("mytag","photoImagePath => false")
         }
         if (tabletImeiPhotoPath.toString().length > 0) {
             validationResults.add(true)
-            Log.d("mytag","tabletImeiPhotoPath => true")
         } else {
             validationResults.add(false)
-            Log.d("mytag","tabletImeiPhotoPath => false")
         }
         if(binding.etLocation.text.toString().length<1){
 
@@ -698,32 +651,11 @@ class RegistrationActivity : AppCompatActivity() {
 
         return !validationResults.contains(false)
     }
-    private fun validateDocuments(): Boolean {
-        val validationResults = mutableListOf<Boolean>()
-        if (aadharIdImagePath.toString().length > 0 ) {
-            validationResults.add(true)
-        } else {
-            validationResults.add(false)
-        }
-        if (gramsevakIdImagePath.toString().length > 0) {
-            validationResults.add(true)
-        } else {
-            validationResults.add(false)
-        }
-        if (photoImagePath.toString().length > 0 ) {
-            validationResults.add(true)
-        } else {
-            validationResults.add(false)
-        }
-        if (tabletImeiPhotoPath.toString().length > 0) {
-            validationResults.add(true)
-        } else {
-            validationResults.add(false)
-        }
-        return !validationResults.contains(false)
-    }
+    private var isPermissionRationaleShown = false
+
     private fun requestThePermissions() {
 
+        Log.d("mytag","requestThePermissions()")
         try {
             PermissionX.init(this@RegistrationActivity)
                 .permissions(
@@ -731,21 +663,8 @@ class RegistrationActivity : AppCompatActivity() {
                     android.Manifest.permission.ACCESS_COARSE_LOCATION,
                     android.Manifest.permission.CAMERA
                 )
-                .onExplainRequestReason { scope, deniedList ->
-                    scope.showRequestReasonDialog(
-                        deniedList,
-                        "Core fundamental are based on these permissions",
-                        "OK",
-                        "Cancel"
-                    )
-                }
                 .onForwardToSettings { scope, deniedList ->
-                    scope.showForwardToSettingsDialog(
-                        deniedList,
-                        "You need to allow necessary permissions in Settings manually",
-                        "OK",
-                        "Cancel"
-                    )
+                    scope.showForwardToSettingsDialog(deniedList, "You need to allow necessary permissions in Settings manually", "OK", "Cancel")
                 }
                 .request { allGranted, grantedList, deniedList ->
                     if (allGranted) {
@@ -759,106 +678,10 @@ class RegistrationActivity : AppCompatActivity() {
                     }
                 }
         } catch (e: Exception) {
-        }
-    }
-    private suspend fun createFilePartByFile(file: File,fileName:String): MultipartBody.Part? {
-        try {
-
-            return file?.let {
-                val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), it)
-                MultipartBody.Part.createFormData(fileName, it.name, requestFile)
-            }
-        } catch (e: Exception) {
-            Log.d("mytag", "Exception createFilePartByFile: ${e.message}")
+            Log.d("mytag","Exception ",e)
             e.printStackTrace()
-            return null
         }
     }
-    private suspend fun uploadUserOnline(){
-        runOnUiThread {
-            dialog.show()
-        }
-        val apiService = ApiClient.create(this@RegistrationActivity)
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val aadharCardImage =
-                    createFilePartByFile(aadharCardFile,"aadhar_image")
-                val gramsevakIdImage =
-                    createFilePartByFile(gramsevakIdPhotoFile,"gram_sevak_id_card_photo")
-                val profileImage =
-                createFilePartByFile(beneficiaryPhotoFile,"photo_of_beneficiary")
-                val tabletImeiImage =
-                    createFilePartByFile(imeiPhotoFile,"photo_of_tablet_imei")
-                val response= apiService.uploadLaborInfo(
-                    fullName = binding.etFullName.text.toString(),
-                    grampanchayatName = binding.etGramPanchayatName.text.toString(),
-                    aadharNumber = binding.etAadharCard.text.toString(),
-                    districtId=districtId,
-                    talukaId =talukaId,
-                    villageId = villageId,
-                    mobileNumber = binding.etMobileNumber.text.toString(),
-                    latitude=latitude.toString(),
-                    longitude = longitude.toString(),
-                    aadharFile = aadharCardImage!!,
-                    gramsevakIdFile = gramsevakIdImage!!,
-                    photoFile = profileImage!!,
-                    tabletImeiFile = tabletImeiImage!!,
-                )
-                if(response.isSuccessful){
-                    if(response.body()?.status.equals("True"))
-                    {
-
-                        deleteFilesFromFolder()
-                        withContext(Dispatchers.Main){
-                            Toast.makeText(this@RegistrationActivity,response.body()?.message,
-                                Toast.LENGTH_SHORT).show()
-                            finish()
-                        }
-                    }else{
-                        withContext(Dispatchers.Main){
-                            Toast.makeText(this@RegistrationActivity,resources.getString(R.string.failed_updating_labour),
-                                Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    Log.d("mytag",""+response.body()?.message)
-                    Log.d("mytag",""+response.body()?.status)
-                }else{
-                    withContext(Dispatchers.Main){
-                        Toast.makeText(this@RegistrationActivity,resources.getString(R.string.failed_updating_labour_response),
-                            Toast.LENGTH_SHORT).show()
-                    }
-                }
-                runOnUiThread {dialog.dismiss()  }
-            } catch (e: Exception) {
-                runOnUiThread { dialog.dismiss() }
-                withContext(Dispatchers.Main){
-                    Toast.makeText(this@RegistrationActivity,resources.getString(R.string.failed_updating_labour_response),
-                        Toast.LENGTH_SHORT).show()
-                }
-                Log.d("mytag","uploadUserOnline "+e.message)
-            }
-        }
-    }
-    private fun deleteFilesFromFolder() {
-        try {
-            val mediaStorageDir = File(externalMediaDirs[0], "myfiles")
-            val uriFolder = Uri.parse(mediaStorageDir.absolutePath)
-            val myAppFolder = File(uriFolder.toString())
-            val files = myAppFolder.listFiles()
-            files?.forEach { file ->
-                if (file.isFile) {
-                    if (file.delete()) {
-                        Log.d("mytag", "Deleted file: ${file.absolutePath}")
-                    } else {
-                        Log.d("mytag", "Failed to delete file: ${file.absolutePath}")
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.d("mytag", "Failed to delete file: ")
-        }
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         if(item.itemId==android.R.id.home){
@@ -1141,5 +964,30 @@ class RegistrationActivity : AppCompatActivity() {
             Log.d("mytag","Exception => ${e.message}",e)
         }
         return null
+    }
+
+
+    private fun showPermissionDeniedDialog() {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.apply {
+            setTitle("Permission Denied")
+            setMessage("You have denied the permission. Please enable it in the app settings.")
+            setPositiveButton("Settings") { dialogInterface: DialogInterface, i: Int ->
+                navigateToAppSettings()
+                dialogInterface.dismiss()
+            }
+            setNegativeButton("Cancel") { dialogInterface: DialogInterface, i: Int ->
+                dialogInterface.dismiss()
+            }
+        }
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    private fun navigateToAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        val uri = Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        startActivity(intent)
     }
 }
