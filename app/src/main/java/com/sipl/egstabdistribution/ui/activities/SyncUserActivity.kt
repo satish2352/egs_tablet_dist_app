@@ -36,6 +36,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -98,13 +99,24 @@ class SyncUserActivity : AppCompatActivity(),OnUserDeleteListener {
         }
         if(item.itemId==R.id.navigation_sync){
 
-            if(isInternetAvailable){
-                CoroutineScope(Dispatchers.IO).launch {
-                   uploadUsersOnline()
+            CoroutineScope(Dispatchers.IO).launch {
+                var count=0;
+                val countJob=async { count=userDao.getUsersCount() }
+                countJob.await()
+                if(count>0){
+                    if(isInternetAvailable){
+                            uploadUsersOnline()
+                    }else{
+                        noInternetDialog.showDialog()
+                    }
+                }else{
+
+                    CoroutineScope(Dispatchers.Main).launch {
+                        Toast.makeText(this@SyncUserActivity,"No Records To Sync",Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }else{
-                noInternetDialog.showDialog()
             }
+
 
         }
 

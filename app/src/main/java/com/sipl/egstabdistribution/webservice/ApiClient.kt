@@ -19,7 +19,11 @@ object ApiClient {
     }
 
     fun create(context: Context): ApiService {
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+        if(BuildConfig.DEBUG){
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+        }else{
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE)
+        }
         val client = OkHttpClient.Builder()
             .addInterceptor(getAuthInterceptor(context))
             .addInterceptor(loggingInterceptor)

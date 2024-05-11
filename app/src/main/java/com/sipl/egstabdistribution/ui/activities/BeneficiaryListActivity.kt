@@ -148,8 +148,8 @@ class BeneficiaryListActivity : AppCompatActivity(),
                                 }
                                 binding.recyclerViewPageNumbers.adapter=pageAdapter
                                 pageAdapter.notifyDataSetChanged()
-                                Toast.makeText(this@BeneficiaryListActivity,response.body()?.message,
-                                    Toast.LENGTH_SHORT).show()
+                                /*Toast.makeText(this@BeneficiaryListActivity,response.body()?.message,
+                                    Toast.LENGTH_SHORT).show()*/
                             }
                         }else{
 

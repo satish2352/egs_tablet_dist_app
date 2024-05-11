@@ -38,13 +38,13 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.permissionx.guolindev.PermissionX
 import com.sipl.egstabdistribution.R
+import com.sipl.egstabdistribution.camera.CameraActivity
 import com.sipl.egstabdistribution.database.AppDatabase
 import com.sipl.egstabdistribution.database.dao.AreaDao
-import com.sipl.egstabdistribution.database.entity.AreaItem
-import com.sipl.egstabdistribution.databinding.ActivityRegistrationBinding
-import com.sipl.egstabdistribution.camera.CameraActivity
 import com.sipl.egstabdistribution.database.dao.UserDao
+import com.sipl.egstabdistribution.database.entity.AreaItem
 import com.sipl.egstabdistribution.database.entity.User
+import com.sipl.egstabdistribution.databinding.ActivityRegistrationBinding
 import com.sipl.egstabdistribution.utils.CustomProgressDialog
 import com.sipl.egstabdistribution.utils.MyValidator
 import com.sipl.egstabdistribution.webservice.ApiClient
@@ -230,15 +230,13 @@ class RegistrationActivity : AppCompatActivity() {
     }
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            // Handle location updates here
-            /*val latitude = location.latitude
-            val longitude = location.longitude*/
-            latitude=location.latitude
-            longitude=location.longitude
+            if(!isInternetAvailable){
+                latitude=location.latitude
+                longitude=location.longitude
+                Log.d("mytag","$latitude,$longitude")
+                binding.etLocation.setText("$latitude,$longitude")
+            }
 
-            Log.d("mytag","$latitude,$longitude")
-            binding.etLocation.setText("$latitude,$longitude")
-            // Do something with latitude and longitude
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
@@ -255,7 +253,12 @@ class RegistrationActivity : AppCompatActivity() {
 
 
     private fun saveUserDetails() {
-
+        var gramPanchayatName=""
+        if(binding.actVillage.text.toString().equals("Other")){
+            gramPanchayatName=binding.etGramPanchayatName.text.toString()
+        }else{
+            gramPanchayatName=binding.actVillage.text.toString()
+        }
         val user=User(
             fullName = binding.etFullName.text.toString(),
             district = districtId,
@@ -270,7 +273,7 @@ class RegistrationActivity : AppCompatActivity() {
             tabletImeiPhoto = tabletImeiPhotoPath,
             beneficaryPhoto = photoImagePath,
             isSynced = false,
-            grampanchayatName = binding.etGramPanchayatName.text.toString()
+            grampanchayatName = gramPanchayatName
         )
         CoroutineScope(Dispatchers.IO).launch {
             try {
