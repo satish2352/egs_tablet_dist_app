@@ -19,45 +19,23 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Add project specific ProGuard rules here.
+# By default, the flags in this file are appended to flags specified
+# in /home/chris/Android/Sdk/tools/proguard/proguard-android.txt
+# You can edit the include path and order by changing the proguardFiles
+# directive in build.gradle.
+#
+# For more details, see
+#   http://developer.android.com/guide/developing/tools/proguard.html
 
--assumenosideeffects class android.util.Log {
-  public static *** v(...);
-  public static *** d(...);
-  public static *** i(...);
-  public static *** w(...);
-  public static *** e(...);
-}
+# Add any project specific keep options here:
 
--keep class com.google.gson.** { *; }
--keepattributes Signature
--keepattributes *Annotation*
--keepclassmembers class * extends androidx.room.RoomDatabase {
-  public static <methods>;
-  private static <methods>;
-}
--keepclassmembers class * {
-  @androidx.room.* <fields>;
-}
-
-
--keep class retrofit2.** { *; }
--keepattributes Signature
--keepattributes Exceptions
--keepclasseswithmembers class * {
-    @retrofit2.http.* <methods>;
-}
-
-
--keep public class * implements com.bumptech.glide.module.GlideModule
--keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
-  **[] $VALUES;
-  public *;
-}
-
--keep class androidx.camera.** { *; }
-
-
--keep class id.zelory.compressor.** { *; }
+# If your project uses WebView with JS, uncomment the following
+# and specify the fully qualified class name to the JavaScript interface
+# class:
+#-keepclassmembers class fqcn.of.javascriptToInject.interface.for.webview {
+#   public *;
+#}
 
 
 # Retrofit does reflection on generic parameters. InnerClasses is required to use Signature and
@@ -109,25 +87,8 @@
 -keep,allowobfuscation,allowshrinking class retrofit2.Response
 
 
--keepattributes Signature, InnerClasses, EnclosingMethod
--keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
--keepattributes AnnotationDefault
--keepclassmembers,allowshrinking,allowobfuscation interface * {
-    @retrofit2.http.* <methods>;
-}
 
--dontwarn javax.annotation.**
--dontwarn kotlin.Unit
--dontwarn retrofit2.KotlinExtensions
--keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
--dontwarn org.codehaus.mojo.animal_sniffer.*
--dontwarn okhttp3.internal.platform.ConscryptPlatform
-
--if interface * { @retrofit2.http.* <methods>; }
--keep,allowobfuscation interface <1>
--keep,allowobfuscation,allowshrinking interface retrofit2.Call
--keep,allowobfuscation,allowshrinking class retrofit2.Response
--keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+#okhttp
 
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
@@ -144,3 +105,46 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+
+
+
+#keep model class
+
+-keep class com.sipl.egstabdistribution.model.** { *; }
+-keep class com.sipl.egstabdistribution.database.** { *; }
+
+
+-keep class androidx.camera.camera2.**{*;}
+
+
+# Keep OkHttp logging interceptor
+-keep class okhttp3.logging.HttpLoggingInterceptor { *; }
+
+# Keep the enum values of the logging level
+
+
+
+-keep class okhttp3.** { *; }
+
+-keep interface okhttp3.** { *; }
+
+-dontwarn okhttp3.**
+
+-dontwarn rx.**
+
+-dontwarn okio.**
+
+-dontwarn com.squareup.okhttp.**
+-keep class com.squareup.okhttp.** { *; }
+-keep interface com.squareup.okhttp.** { *; }
+
+-dontwarn retrofit.**
+-keep class retrofit.** { *; }
+-keepclasseswithmembers class * {
+    @retrofit.http.* <methods>;
+}
+
+
+-keep class * extends androidx.room.RoomDatabase
+-keep @androidx.room.Entity class *
+-dontwarn androidx.room.paging.**
