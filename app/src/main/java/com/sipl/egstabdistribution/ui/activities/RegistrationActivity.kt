@@ -154,10 +154,10 @@ class RegistrationActivity : AppCompatActivity() {
                       }
                   }else{
                       saveUserDetails();
-                      Toast.makeText(this@RegistrationActivity,resources.getString(R.string.enter_all_details),Toast.LENGTH_LONG).show()
+                     // Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
                   }
               }else{
-                  Toast.makeText(this@RegistrationActivity,resources.getString(R.string.check_internet_connection),Toast.LENGTH_LONG).show()
+                  Toast.makeText(this@RegistrationActivity,resources.getString(R.string.enter_all_details),Toast.LENGTH_LONG).show()
               }
             }
             binding.ivChangeAadhar.setOnClickListener {

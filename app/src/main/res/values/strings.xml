@@ -32,7 +32,7 @@
     <string name="register">Register</string>
     <string name="enter_aadhar_card_number">Enter Aadhar Card Number</string>
     <string name="enter_grampanchayat_name">Enter Grampanchayat Name</string>
-    <string name="enter_all_details">Enter All Details</string>
+    <string name="enter_all_details">Please Enter All Details</string>
     <string name="check_internet_connection">Check Internet Connection</string>
     <string name="tablet_distribution_information">Tablet Distribution Information</string>
     <string name="tablet_imei_photo">Tablet IMEI Photo</string>
