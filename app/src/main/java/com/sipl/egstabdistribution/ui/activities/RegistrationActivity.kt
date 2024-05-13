@@ -604,7 +604,7 @@ class RegistrationActivity : AppCompatActivity() {
             binding.actVillage.error = null
             validationResults.add(true)
         } else {
-            binding.actVillage.error = resources.getString(R.string.select_village)
+            binding.actVillage.error = resources.getString(R.string.select_grampanchayat)
             validationResults.add(false)
         }
         // Mobile
@@ -715,7 +715,11 @@ class RegistrationActivity : AppCompatActivity() {
                         {
                             continuation.resume(true)
                             isAadharVerified=true
-                            runOnUiThread { binding.etAadharCard.error=null }
+                            runOnUiThread {
+                                binding.etAadharCard.setError(null)
+                                binding.etAadharCard.clearFocus()
+
+                            }
                             withContext(Dispatchers.Main){
                             }
 
