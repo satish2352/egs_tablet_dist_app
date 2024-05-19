@@ -132,7 +132,7 @@ class LoginActivity : AppCompatActivity() {
                                         customProgressDialog.dismiss()
                                         val toast = Toast.makeText(
                                             this@LoginActivity,
-                                            getString(R.string.error_while_login),
+                                            getString(R.string.response_unsuccessfull),
                                             Toast.LENGTH_SHORT
                                         )
                                         toast.show()
@@ -141,11 +141,13 @@ class LoginActivity : AppCompatActivity() {
                             }
 
                             override fun onFailure(call: Call<LoginModel>, t: Throwable) {
+                                Log.d("mytag",t.message,t)
+                                t.printStackTrace()
                                 runOnUiThread {
                                     customProgressDialog.dismiss()
                                     val toast = Toast.makeText(
                                         this@LoginActivity,
-                                        getString(R.string.error_while_login),
+                                        getString(R.string.error_occurred_during_api_call),
                                         Toast.LENGTH_SHORT
                                     )
                                     toast.show()

@@ -10,7 +10,7 @@ data class Data(
     val id: Int,
     val imei_no: String,
     val ip_address: String,
-    val is_active: Int,
+    val is_active: Any,
     val l_name: String,
     val m_name: String,
     val number: String,

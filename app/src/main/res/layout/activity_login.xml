@@ -22,9 +22,9 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
         android:fontFamily="@font/poppins"
-        android:text="EGS"
+        android:text="EGS Tablet Distribution"
         android:textColor="@color/white"
-        android:textSize="30dp"></TextView>
+        android:textSize="20sp"></TextView>
 
     <RelativeLayout
         android:layout_width="match_parent"

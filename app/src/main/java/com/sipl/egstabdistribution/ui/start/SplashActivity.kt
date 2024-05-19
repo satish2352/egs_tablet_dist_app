@@ -164,15 +164,19 @@ class SplashActivity : AppCompatActivity() {
         }
     }
     fun mapDataToArea(apiResponseList: List<AreaUpdateData>): List<AreaItem> {
-        return apiResponseList.map { apiResponse ->
-            AreaItem(
-                parent_id = apiResponse.parent_id.toString(),
-                is_active = apiResponse.is_active,
-                is_visible = apiResponse.is_visible,
-                location_id = apiResponse.location_id.toString(),
-                location_type = apiResponse.location_type,
-                name = apiResponse.name
-            )
+        try {
+            return apiResponseList.map { apiResponse ->
+                AreaItem(
+                    parent_id = apiResponse.parent_id.toString(),
+                    is_active = apiResponse.is_active,
+                    is_visible = apiResponse.is_visible,
+                    location_id = apiResponse.location_id.toString(),
+                    location_type = apiResponse.location_type,
+                    name = apiResponse.name
+                )
+            }
+        } catch (e: Exception) {
+            return emptyList()
         }
     }
 
