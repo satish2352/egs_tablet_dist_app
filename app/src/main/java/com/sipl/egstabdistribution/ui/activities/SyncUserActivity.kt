@@ -306,25 +306,36 @@ class SyncUserActivity : AppCompatActivity(),OnUserDeleteListener {
     }
     override fun onUserDelete(user: UsersWithAreaNames) {
 
-        val builder = AlertDialog.Builder(this@SyncUserActivity)
-        builder.setTitle(getString(R.string.delete))
-            .setIcon(R.drawable.ic_delete)
-            .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_beneficiary_details))
-            .setPositiveButton(getString(R.string.yes)) { xx, yy ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    val count=userDao.deleteUserById(user.id)
-                    if(count>0){
-                        fetchUserList()
-                        withContext(Dispatchers.Main){
-                            dialog.dismiss()
-                            xx.dismiss()
+        try {
+            val builder = AlertDialog.Builder(this@SyncUserActivity)
+            builder.setTitle(getString(R.string.delete))
+                .setIcon(R.drawable.ic_delete)
+                .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_beneficiary_details))
+                .setPositiveButton(getString(R.string.yes)) { xx, yy ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val count=userDao.deleteUserById(user.id)
+                        if(count>0){
+                            val filesList= mutableListOf<Uri>()
+                            filesList.add(Uri.parse(user.aadharIdCardPhoto))
+                            filesList.add(Uri.parse(user.beneficaryPhoto))
+                            filesList.add(Uri.parse(user.gramsevakIdCardPhoto))
+                            filesList.add(Uri.parse(user.tabletImeiPhoto))
+                            deleteFilesFromFolder(filesList)
+                            fetchUserList()
+                            withContext(Dispatchers.Main){
+                                dialog.dismiss()
+                                xx.dismiss()
+                            }
                         }
-                    }
 
+                    }
                 }
-            }
-            .setNegativeButton(getString(R.string.no), null) // If "No" is clicked, do nothing
-            .show()
+                .setNegativeButton(getString(R.string.no), null) // If "No" is clicked, do nothing
+                .show()
+        } catch (e: Exception) {
+            Log.d("mytag", "Failed to delete file: ${e.message}",e)
+            e.printStackTrace()
+        }
     }
 
 }

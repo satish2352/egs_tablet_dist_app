@@ -128,6 +128,7 @@ class SplashActivity : AppCompatActivity() {
                             if(response.body()?.data?.size!!>0){
                                 CoroutineScope(Dispatchers.IO).launch {
                                     val documentReasonsConverted=mapDataToArea(response?.body()?.data!!)
+
                                     documentReasonsConverted.forEach { entity ->
                                         val existingEntity = areaDao.getAreaByLocationId(entity.location_id)
                                         if (existingEntity != null) {
@@ -176,7 +177,9 @@ class SplashActivity : AppCompatActivity() {
                 )
             }
         } catch (e: Exception) {
-            return emptyList()
+            Log.d("mytag","Exception: "+e.message,e)
+            e.printStackTrace()
+            return mutableListOf()
         }
     }
 

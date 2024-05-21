@@ -11,6 +11,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
@@ -25,6 +26,7 @@ import com.sipl.egstabdistribution.database.dao.UserDao
 import com.sipl.egstabdistribution.databinding.ActivityCameraBinding
 import com.sipl.egstabdistribution.databinding.ActivityHomeBinding
 import com.sipl.egstabdistribution.ui.start.LoginActivity
+import com.sipl.egstabdistribution.ui.start.SplashActivity
 import com.sipl.egstabdistribution.utils.MySharedPref
 import com.sipl.egstabdistribution.utils.NoInternetDialog
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -44,6 +46,13 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding= ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val mySharedPref=MySharedPref(this)
+        if(!mySharedPref.getIsLoggedIn()){
+            val intent= Intent(this@HomeActivity, SplashActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+            finish()
+        }
         database= AppDatabase.getDatabase(this)
         userDao=database.userDao()
         binding.floatingActionButton.setOnClickListener {
