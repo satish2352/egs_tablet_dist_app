@@ -17,14 +17,14 @@
         android:textColor="@color/white"></TextView>
 
     <TextView
+        android:layout_marginBottom="24dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="10dp"
         android:fontFamily="@font/poppins"
-        android:text="EGS Tablet Distribution"
+        android:text="@string/app_name"
         android:textColor="@color/white"
-        android:textSize="20sp"></TextView>
+        android:textSize="20sp"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -34,7 +34,7 @@
             android:orientation="vertical"
             android:elevation="50dp"
             app:cardElevation="50dp"
-            android:background="@drawable/round_circle_white"
+            android:background="@drawable/circle_bg"
             android:layout_centerHorizontal="true"
             android:layout_width="180dp"
             android:layout_height="180dp">
@@ -43,8 +43,8 @@
                 android:layout_gravity="center"
                 android:layout_width="150dp"
                 android:layout_height="150dp"
-                android:background="@drawable/round_circle_white"
-                android:src="@drawable/gom"></ImageView>
+                android:background="@drawable/circle_bg"
+                android:src="@drawable/xlogo"></ImageView>
 
             <TextView
                 android:visibility="gone"

@@ -4,27 +4,42 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#EDFFFD"
     tools:context="com.sipl.egstabdistribution.ui.start.SplashActivity">
+
     <ImageView
+        android:id="@+id/imageView"
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:layout_marginTop="264dp"
-        android:src="@drawable/gom"
+        android:src="@drawable/xlogo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></ImageView>
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:textColor="#000000"
+        android:id="@+id/tvVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        app:layout_constraintBottom_toTopOf="@+id/progressBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
     <ProgressBar
-        android:indeterminate="true"
-        android:indeterminateDrawable="@drawable/progress_bg"
-        android:progress="0"
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyle"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:scrollbarSize="10dp"
         android:layout_marginBottom="62dp"
+        android:indeterminate="true"
+        android:indeterminateDrawable="@drawable/progress_bg"
+        android:progress="0"
+        android:scrollbarSize="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

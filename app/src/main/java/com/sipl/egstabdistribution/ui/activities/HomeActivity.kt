@@ -46,6 +46,7 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding= ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        supportActionBar?.setTitle(R.string.app_name)
         val mySharedPref=MySharedPref(this)
         if(!mySharedPref.getIsLoggedIn()){
             val intent= Intent(this@HomeActivity, SplashActivity::class.java)

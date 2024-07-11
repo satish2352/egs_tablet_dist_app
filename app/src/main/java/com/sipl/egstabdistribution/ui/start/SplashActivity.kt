@@ -2,6 +2,8 @@ package com.sipl.egstabdistribution.ui.start
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
@@ -40,6 +42,15 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding= ActivitySplashBinding.inflate(layoutInflater)
         supportActionBar?.hide()
+        val packageInfo: PackageInfo = packageManager.getPackageInfo(packageName, 0)
+        val versionCode: Long = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo.longVersionCode
+        } else {
+            @Suppress("DEPRECATION")
+            packageInfo.versionCode.toLong()
+        }
+        // Display the version name and version code in your TextView
+        binding.tvVersion.text = "V $versionCode"
         setContentView(binding.root)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         mySharedPref = MySharedPref(this)

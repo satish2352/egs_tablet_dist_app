@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">EGS Tab Distribution</string>
+    <string name="app_name">Fieldwork Reporting</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="full_name_required">Full Name Required</string>
     <string name="enter_valid_mobile">Enter Valid Mobile Number</string>
