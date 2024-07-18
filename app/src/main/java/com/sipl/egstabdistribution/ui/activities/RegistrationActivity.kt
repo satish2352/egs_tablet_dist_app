@@ -918,19 +918,19 @@ class RegistrationActivity : AppCompatActivity() {
             }
         }
     }
-    private suspend fun saveBitmapToFile(context: Context, bitmap: Bitmap, uri: Uri) {
+   /* private suspend fun saveBitmapToFile(context: Context, bitmap: Bitmap, uri: Uri) {
         try {
             val outputStream = context.contentResolver.openOutputStream(uri)
-            outputStream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+            outputStream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 50, it) }
             outputStream?.flush()
             outputStream?.close()
             val imageFile=bitmapToFile(context,bitmap)
             val compressedImageFile = imageFile?.let {
                 Compressor.compress(context, it) {
                     format(Bitmap.CompressFormat.JPEG)
-                    resolution(780,1360)
-                    quality(100)
-                    size(500000) // 500 KB
+                    resolution(1400,2800)
+                    quality(50)
+                    size(2_097_152) // 1MB KB
                 }
             }
             compressedImageFile?.let { compressedFile:File ->
@@ -951,7 +951,44 @@ class RegistrationActivity : AppCompatActivity() {
             e.printStackTrace()
             Log.d("mytag","Exception => ${e.message}",e)
         }
+    }*/
+    private suspend fun saveBitmapToFile(context: Context, bitmap: Bitmap, uri: Uri) {
+        try {
+            // Compress and save the bitmap directly to the output stream
+//            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+//                if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)) {
+//                    Log.d("mytag", "Failed to compress bitmap")
+//                    return
+//                }
+//                outputStream.flush()
+//            }
+
+            // Convert bitmap to file
+            val imageFile = bitmapToFile(context, bitmap) ?: run {
+                Log.d("mytag", "Failed to convert bitmap to file")
+                return
+            }
+
+            // Compress the image file
+            val compressedImageFile = Compressor.compress(context, imageFile) {
+                format(Bitmap.CompressFormat.JPEG)
+                resolution(750, 1400)
+                quality(100)
+                size(1_097_152) // 2MB
+            }
+
+            // Write the compressed file back to the given URI
+            FileInputStream(compressedImageFile).use { inputStream ->
+                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.d("mytag", "Exception => ${e.message}", e)
+        }
     }
+
     fun bitmapToFile(context: Context, bitmap: Bitmap): File? {
         // Create a file in the cache directory
         val time= Calendar.getInstance().timeInMillis.toString()
@@ -959,7 +996,7 @@ class RegistrationActivity : AppCompatActivity() {
 
         try {
             val fos = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, fos)
             fos.flush()
             fos.close()
             return file
